@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:paddingTop="5dp">
+
+	<TextView
+		android:id="@id/chat_date"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center_horizontal"
+		android:layout_marginBottom="5dp"
+		android:background="@drawable/round_green_drawable"
+		android:gravity="center"
+		android:minWidth="35dp"
+		android:paddingBottom="1dp"
+		android:paddingLeft="5dp"
+		android:paddingRight="5dp"
+		android:paddingTop="1dp"
+		android:text="chat_date"
+		android:textColor="@color/white"
+		android:textSize="12sp"/>
+
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:paddingLeft="8dp"
+		android:paddingRight="8dp">
+
+		<ImageView
+			android:id="@id/chat_head"
+			android:layout_width="@dimen/chat_head_width"
+			android:layout_height="@dimen/chat_head_width"
+			android:src="@mipmap/icon_head_customer"/>
+
+		<RelativeLayout
+			android:id="@id/chat_content_layout"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginRight="@dimen/chat_head_width"
+			android:layout_toRightOf="@id/chat_head"
+			android:paddingLeft="8dp"
+			android:paddingRight="8dp">
+
+			<TextView
+				android:id="@id/chat_content"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:background="@drawable/chat_bubble_left"
+				android:gravity="center_vertical"
+				android:minHeight="@dimen/chat_head_width"
+				android:paddingLeft="15dp"
+				android:paddingRight="10dp"
+				android:textColor="@color/color_primary_gray"
+				android:textSize="14sp"/>
+		</RelativeLayout>
+
+	</RelativeLayout>
+</LinearLayout>

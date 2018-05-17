@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+	<item name="chat_date" type="id"/>
+	<item name="chat_head" type="id"/>
+	<item name="chat_content_layout" type="id"/>
+	<item name="chat_content" type="id"/>
+
+</resources>
