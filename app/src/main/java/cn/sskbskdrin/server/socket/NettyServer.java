@@ -2,6 +2,7 @@ package cn.sskbskdrin.server.socket;
 
 import java.net.InetSocketAddress;
 
+import cn.sskbskdrin.server.utils.ThreadPool;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFuture;
@@ -33,7 +34,7 @@ public class NettyServer {
     }
 
     public static void start(final int port) {
-        new Thread(new Runnable() {
+        ThreadPool.run(new Runnable() {
             @Override
             public void run() {
                 EventLoopGroup boss = new NioEventLoopGroup();
@@ -41,7 +42,7 @@ public class NettyServer {
                 try {
                     ServerBootstrap b = new ServerBootstrap();
                     b.group(boss, worker).channel(NioServerSocketChannel.class).localAddress(new InetSocketAddress
-                            (port)).childHandler(new ChannelInitializer<SocketChannel>() {
+                        (port)).childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             System.out.println("initChannel");
@@ -71,7 +72,7 @@ public class NettyServer {
                 }
                 System.out.println("netty socket server end");
             }
-        }).start();
+        });
     }
 
     private static class ServiceHandler extends EchoHandler {
