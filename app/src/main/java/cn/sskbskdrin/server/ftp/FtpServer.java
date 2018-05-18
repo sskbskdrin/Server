@@ -1,6 +1,9 @@
 package cn.sskbskdrin.server.ftp;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.List;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -17,7 +20,6 @@ import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.oio.OioServerSocketChannel;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
 public class FtpServer {
@@ -41,6 +43,23 @@ public class FtpServer {
 
     public static void main(String[] args) {
         FtpServer.getInstance().start(2100);
+        //        try {
+        //            new FtpServer().listen(2100);
+        //        } catch (IOException e) {
+        //            e.printStackTrace();
+        //        }
+    }
+
+    public void listen(int port) throws IOException {
+        Socket socket = null;
+        Share.init();
+        ServerSocket serverSocket = new ServerSocket(port);
+        while (true) {
+            //这个是建立连接,三次握手的过程，当连接建立了之后，两个socket之间的通讯是直接通过流进行的，不用再通过这一步
+            socket = serverSocket.accept();
+            ControllerThread thread = new ControllerThread(socket);
+            thread.start();
+        }
     }
 
     public void start(final int port) {
@@ -80,16 +99,17 @@ public class FtpServer {
             EventLoopGroup worker = new NioEventLoopGroup();
             try {
                 ServerBootstrap b = new ServerBootstrap();
-                b.group(boss, worker).channel(NioServerSocketChannel.class).localAddress(new
-                        InetSocketAddress(mPort)).childHandler(new ChannelInitializer<SocketChannel>() {
+                b.group(boss, worker).channel(NioServerSocketChannel.class).localAddress(new InetSocketAddress(mPort)
+                ).childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        socketChannel.write("220 hello ftp\r\n");
+                        socketChannel.flush();
                         System.out.println("initChannel");
                         ChannelPipeline pipeline = socketChannel.pipeline();
                         pipeline.addFirst("decoder", new ByteToMessageDecoder() {
                             @Override
-                            protected void decode(ChannelHandlerContext ctx, ByteBuf in,
-                                                  List<Object> out) throws Exception {
+                            protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
                                 System.out.println("decoder");
                                 if (in == null) {
                                     return;
@@ -102,8 +122,7 @@ public class FtpServer {
                         });
                         pipeline.addLast("handler", new FtpHandler());
                     }
-                }).childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark
-                        (1024, 32 * 1024));
+                }).childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 32 * 1024));
                 //绑定监听
                 ChannelFuture f = b.bind().sync();
                 System.out.println("正在监听...");
