@@ -42,7 +42,7 @@ public class NettyServer {
                 try {
                     ServerBootstrap b = new ServerBootstrap();
                     b.group(boss, worker).channel(NioServerSocketChannel.class).localAddress(new InetSocketAddress
-                        (port)).childHandler(new ChannelInitializer<SocketChannel>() {
+                            (port)).childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             System.out.println("initChannel");

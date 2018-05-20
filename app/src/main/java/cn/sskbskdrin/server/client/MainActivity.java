@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -14,8 +13,8 @@ import android.widget.ImageView;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import cn.sskbskdrin.server.ftp.FtpServer;
 import io.netty.channel.Channel;
-import cn.sskbskdrin.server.socket.NettyServer;
 
 /**
  * @author ex-keayuan001
@@ -66,7 +65,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mLayout = new FloatView(getApplicationContext());
         mLayout.setBackgroundResource(R.mipmap.ic_launcher);
         // 获取WindowManager
-        mWindowManager = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+        mWindowManager = (WindowManager) getApplicationContext().getSystemService(Context
+                .WINDOW_SERVICE);
         // 设置LayoutParams(全局变量）相关参数
         WindowManager.LayoutParams param = new WindowManager.LayoutParams();
 
@@ -97,35 +97,44 @@ public class MainActivity extends Activity implements View.OnClickListener {
         // 显示myFloatView图像
         mLayout.setWmParams(param);
         mWindowManager.addView(mLayout, param);
-
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.client_connect:
-                String string = mHostView.getText().toString().trim();
-                if (!TextUtils.isEmpty(string)) {
-                    final String[] str = string.split(":");
-                    if (str.length != 2) {
-                        return;
-                    }
-                    final String host = str[0];
-                    final int port = Integer.parseInt(str[1]);
-                    NettyServer.start(port);
-                    //                    NettyClient.connect(str[0], Integer.parseInt(str[1]), new NettyClient
-                    // .ChannelCallback() {
-                    //                        @Override
-                    //                        public void onConnect(Channel channel) {
-                    //                            mChannel = channel;
-                    //                        }
-                    //
-                    //                        @Override
-                    //                        public void onDisconnect(Channel channel) {
-                    //                            mChannel = null;
-                    //                        }
-                    //                    });
-                }
+                FtpServer.getInstance().start(2100);
+                //                new Thread(new Runnable() {
+                //                    @Override
+                //                    public void run() {
+                //                        Main.main(null);
+                //                    }
+                //                }).start();
+                //                String string = mHostView.getText().toString().trim();
+                //                if (!TextUtils.isEmpty(string)) {
+                //                    final String[] str = string.split(":");
+                //                    if (str.length != 2) {
+                //                        return;
+                //                    }
+                //                    final String host = str[0];
+                //                    final int port = Integer.parseInt(str[1]);
+                //                    NettyServer.start(port);
+                //                    //                    NettyClient.connect(str[0], Integer
+                // .parseInt(str[1]), new NettyClient
+                //                    // .ChannelCallback() {
+                //                    //                        @Override
+                //                    //                        public void onConnect(Channel
+                // channel) {
+                //                    //                            mChannel = channel;
+                //                    //                        }
+                //                    //
+                //                    //                        @Override
+                //                    //                        public void onDisconnect(Channel
+                // channel) {
+                //                    //                            mChannel = null;
+                //                    //                        }
+                //                    //                    });
+                //                }
                 break;
             case R.id.client_send:
                 if (mChannel != null) {

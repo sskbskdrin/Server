@@ -12,40 +12,55 @@ import io.netty.util.CharsetUtil;
  */
 public class EchoHandler extends ChannelInboundHandlerAdapter {
 
-	@Override
-	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		log("channelActive");
-	}
+    @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        ctx.writeAndFlush("220 test regist\r\n");
+    }
 
-	@Override
-	public void channelRead(ChannelHandlerContext ctx, Object msg) {
-		if (msg instanceof Body) {
-			log("channelRead:" + msg.toString());
-		} else {
-			ByteBuf in = (ByteBuf) msg;
-			log("channelRead:" + in.toString(CharsetUtil.UTF_8));
-		}
-	}
+    @Override
+    public void channelActive(final ChannelHandlerContext ctx) {
+        log("channelActive");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                ctx.writeAndFlush("220 test echo\r\n");
+            }
+        }).start();
+    }
 
-	@Override
-	public void channelReadComplete(ChannelHandlerContext ctx) {
-		log("channelReadComplete:");
-	}
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        if (msg instanceof Body) {
+            log("channelRead:" + msg.toString());
+        } else {
+            ByteBuf in = (ByteBuf) msg;
+            log("channelRead:" + in.toString(CharsetUtil.UTF_8));
+        }
+    }
 
-	@Override
-	public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-		System.out.println("channelWritabilityChanged:" + ctx.channel().isWritable());
-	}
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) {
+        log("channelReadComplete:");
+    }
 
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx,
-	                            Throwable cause) {
-		cause.printStackTrace();
-		ctx.close();
-	}
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) {
+        System.out.println("channelWritabilityChanged:" + ctx.channel().isWritable());
+    }
 
-	private static void log(String log) {
-		System.out.println(log);
-	}
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        cause.printStackTrace();
+        ctx.close();
+    }
+
+    private static void log(String log) {
+        System.out.println(log);
+    }
 
 }

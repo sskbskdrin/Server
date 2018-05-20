@@ -1,0 +1,1 @@
+sh -c "CLASSPATH=/data/app/cn.sskbskdrin.floatview-2/base.apk app_process32 /system/bin cn.sskbskdrin.service.Main "

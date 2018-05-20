@@ -50,7 +50,6 @@ public class HttpHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
             heads.add(HttpHeaderNames.CONTENT_TYPE, contentType + "; charset=UTF-8");
             heads.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         }
-
         ctx.write(response);
     }
 

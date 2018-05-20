@@ -4,6 +4,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -69,12 +70,14 @@ public class HttpServer {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
                     System.out.println("initChannel ch:" + ch);
-                    ch.pipeline().addLast("decoder", new HttpRequestDecoder()).addLast("encoder", new
-                        HttpResponseEncoder()).addLast("aggregator", new HttpObjectAggregator(512 * 1024)).addLast
-                        ("handler", new HttpHandler());
+                    ChannelPipeline pipeline = ch.pipeline();
+                    pipeline.addLast("decoder", new HttpRequestDecoder());
+                    pipeline.addLast("encoder", new HttpResponseEncoder());
+                    pipeline.addLast("aggregator", new HttpObjectAggregator(512 * 1024));
+                    pipeline.addLast("handler", new HttpHandler());
                 }
             }).option(ChannelOption.SO_BACKLOG, 128) // determining the number of connections queued
-                .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
+                    .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
             System.out.println("bind");
             try {
                 mChannel = b.bind(mPort).sync().channel();

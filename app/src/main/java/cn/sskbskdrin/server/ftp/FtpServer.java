@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
+import cn.sskbskdrin.server.utils.L;
+import cn.sskbskdrin.server.utils.ThreadPool;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -20,14 +20,16 @@ import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.ByteToMessageDecoder;
 
 public class FtpServer {
+    private static final String TAG = "FtpServer";
     private FtpThread mThread;
 
     private static FtpServer mInstance;
+    private Map<String, ControllerThread> mMap;
 
     private FtpServer() {
+        mMap = new HashMap<>(10);
     }
 
     public static FtpServer getInstance() {
@@ -42,23 +44,29 @@ public class FtpServer {
     }
 
     public static void main(String[] args) {
+        L.d(TAG, "ftp server start");
         FtpServer.getInstance().start(2100);
-        //        try {
-        //            new FtpServer().listen(2100);
-        //        } catch (IOException e) {
-        //            e.printStackTrace();
-        //        }
+        //        new FtpServer().listen(2100);
     }
 
-    public void listen(int port) throws IOException {
-        Socket socket = null;
-        Share.init();
-        ServerSocket serverSocket = new ServerSocket(port);
-        while (true) {
-            //这个是建立连接,三次握手的过程，当连接建立了之后，两个socket之间的通讯是直接通过流进行的，不用再通过这一步
-            socket = serverSocket.accept();
-            ControllerThread thread = new ControllerThread(socket);
-            thread.start();
+    public void listen(int port) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(port);
+            while (true) {
+                //这个是建立连接,三次握手的过程，当连接建立了之后，两个socket之间的通讯是直接通过流进行的，不用再通过这一步
+                Socket socket = serverSocket.accept();
+
+                ControllerThread thread = new ControllerThread(socket);
+                String address = socket.getRemoteSocketAddress().toString();
+                if (mMap.containsKey(address)) {
+                    mMap.remove(address).getSocket().close();
+                } else {
+                    mMap.put(address, thread);
+                }
+                ThreadPool.run(thread);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -102,25 +110,12 @@ public class FtpServer {
                 b.group(boss, worker).channel(NioServerSocketChannel.class).localAddress(new InetSocketAddress(mPort)
                 ).childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        socketChannel.write("220 hello ftp\r\n");
-                        socketChannel.flush();
-                        System.out.println("initChannel");
+                    protected void initChannel(SocketChannel socketChannel) {
+                        L.d(TAG, "initChannel");
                         ChannelPipeline pipeline = socketChannel.pipeline();
-                        pipeline.addFirst("decoder", new ByteToMessageDecoder() {
-                            @Override
-                            protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-                                System.out.println("decoder");
-                                if (in == null) {
-                                    return;
-                                }
-                                int ableLength = in.readableBytes();
-                                byte[] data = new byte[ableLength];
-                                in.readBytes(data);
-                                out.add(new String(data));
-                            }
-                        });
-                        pipeline.addLast("handler", new FtpHandler());
+                        pipeline.addLast("encoder", new FtpEncoder());
+                        pipeline.addLast("decoder", new FtpDecoder());
+                        pipeline.addLast("handler", new FtpClientChannel());
                     }
                 }).childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 32 * 1024));
                 //绑定监听
@@ -129,12 +124,6 @@ public class FtpServer {
                 mChannel = f.channel();
                 mChannel.closeFuture().sync();
                 System.out.println("sync");
-                f.addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                        System.out.println("operationComplete:" + channelFuture);
-                    }
-                });
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
