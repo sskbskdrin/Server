@@ -1,14 +1,14 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
     defaultConfig {
-        applicationId "cn.sskbskdrin.server"
         minSdkVersion 15
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
+
     }
     buildTypes {
         release {
@@ -20,7 +20,5 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'io.netty:netty-all:4.1.9.Final'
-    implementation project(':server')
-    implementation project(':log')
+    implementation 'com.android.support:support-annotations:27.1.1'
 }
