@@ -86,7 +86,8 @@ public class NettyClient {
 
     private static void test() {
         //        try {
-        //            Runtime.getRuntime().exec("adb shell export CLASSPATH=/data/app/cn.sskbskdrin.floatview-1/base
+        //            Runtime.getRuntime().exec("adb shell export CLASSPATH=/data/app/cn
+        // .sskbskdrin.floatview-1/base
         // .apk\n" +
         //                    "exec app_process32 /system/bin cn.sskbskdrin.floatview.Main");
         //        } catch (IOException e) {
@@ -95,15 +96,18 @@ public class NettyClient {
         try {
             Process process = Runtime.getRuntime().exec("adb shell");  //adb shell
 
-            final StringBuilder cmd = new StringBuilder("export CLASSPATH=/data/app/cn.sskbskdrin.floatview-1/base" +
-                ".apk \n");
+            final StringBuilder cmd = new StringBuilder("export CLASSPATH=/data/app/cn.sskbskdrin" +
+                    ".floatview-1/base" + ".apk \n");
             cmd.append("exec app_process32 /system/bin cn.sskbskdrin.floatview.Main \" 12345\" \n");
             //            cmd.append("exit\n");
 
-            final BufferedWriter outputStream = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            final BufferedWriter outputStream = new BufferedWriter(new OutputStreamWriter(process
+                    .getOutputStream()));
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(process
+                    .getInputStream()));
             //这里一定要注意错误流的读取，不然很容易阻塞，得不到你想要的结果，
-            final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process
+                    .getErrorStream()));
             new Thread(new Runnable() {
                 String line;
 
@@ -119,8 +123,8 @@ public class NettyClient {
                 }
             }).start();
             new Thread(new Runnable() {
-                final BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cmd
-                    .toString().getBytes())));
+                final BufferedReader br = new BufferedReader(new InputStreamReader(new
+                        ByteArrayInputStream(cmd.toString().getBytes())));
 
                 public void run() {
                     System.out.println("writer started");
@@ -194,8 +198,8 @@ public class NettyClient {
             EventLoopGroup group = new NioEventLoopGroup();
             try {
                 Bootstrap b = new Bootstrap();
-                b.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true).handler(new
-                    BodyChannelInitializer());
+                b.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY,
+                        true).handler(new BodyChannelInitializer());
 
                 ChannelFuture future = b.connect(host, port).sync();
                 channel = future.channel();
@@ -241,7 +245,8 @@ public class NettyClient {
         String tempLine = null;
 
         if (httpURLConnection.getResponseCode() >= 300) {
-            throw new Exception("HTTP Request is not success, Response code is " + httpURLConnection.getResponseCode());
+            throw new Exception("HTTP Request is not success, Response code is " +
+                    httpURLConnection.getResponseCode());
         }
         byte[] bytes;
         try {

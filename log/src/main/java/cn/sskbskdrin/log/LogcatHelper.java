@@ -1,5 +1,8 @@
 package cn.sskbskdrin.log;
 
+import android.content.Context;
+import android.os.Environment;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,9 +12,6 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import android.content.Context;
-import android.os.Environment;
 
 /**
  * log日志统计保存
@@ -33,7 +33,8 @@ public class LogcatHelper {
      */
     public void init(Context context) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            PATH_LOGCAT = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "baby";
+            PATH_LOGCAT = Environment.getExternalStorageDirectory().getAbsolutePath() + File
+                    .separator + "baby";
         } else {
             PATH_LOGCAT = context.getFilesDir().getAbsolutePath() + File.separator + "baby";
         }
@@ -95,7 +96,7 @@ public class LogcatHelper {
             // cmds = "logcat  | grep \"(" + mPID + ")\"";//打印所有日志信息
             // cmds = "logcat -s way";//打印标签过滤信息
             //            cmd = "logcat *:d | grep \"(" + mPID + ")\"";
-            cmd = "logcat | grep \"(" + mPID + ")\"";
+            cmd = "logcat | grep " + mPID + ")";
         }
 
         public void stopLogs() {
@@ -104,7 +105,8 @@ public class LogcatHelper {
 
         private FileOutputStream getOut() {
             try {
-                String fileName = "log_" + new SimpleDateFormat("MM-dd'_'HH:mm:ss", Locale.US).format(new Date());
+                String fileName = "log_" + new SimpleDateFormat("MM-dd'_'HH:mm:ss", Locale.US)
+                        .format(new Date());
                 return new FileOutputStream(new File(mDir, fileName + ".log"));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -117,7 +119,8 @@ public class LogcatHelper {
             FileOutputStream out = getOut();
             try {
                 logcatProc = Runtime.getRuntime().exec(cmd);
-                mReader = new BufferedReader(new InputStreamReader(logcatProc.getInputStream()), 1024);
+                mReader = new BufferedReader(new InputStreamReader(logcatProc.getInputStream()),
+                        1024);
                 String line;
                 while (mRunning && (line = mReader.readLine()) != null) {
                     if (!mRunning) {
@@ -161,13 +164,9 @@ public class LogcatHelper {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    out = null;
                 }
-
             }
-
         }
-
     }
 
 }

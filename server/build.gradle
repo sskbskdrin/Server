@@ -20,6 +20,6 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'io.netty:netty-all:4.1.9.Final'
-    
     testImplementation 'junit:junit:4.12'
+    implementation project(':log')
 }

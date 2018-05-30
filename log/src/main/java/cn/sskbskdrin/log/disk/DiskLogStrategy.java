@@ -7,7 +7,8 @@ import android.os.Message;
 import android.os.Process;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import cn.sskbskdrin.log.LogStrategy;
@@ -20,7 +21,9 @@ import cn.sskbskdrin.log.LogStrategy;
  */
 public class DiskLogStrategy extends HandlerThread implements LogStrategy {
 
-    private int mMaxFileSize = 100 * 1024;
+    private static final int WHAT_CLOSE_FILE = 1001;
+
+    private int mMaxFileSize = 1024 * 1024;
 
     private String mPath;
     private Handler mHandler;
@@ -46,13 +49,17 @@ public class DiskLogStrategy extends HandlerThread implements LogStrategy {
 
     @Override
     public void log(int level, String tag, String message) {
+        mHandler.removeMessages(WHAT_CLOSE_FILE);
         Message.obtain(mHandler, level, message).sendToTarget();
+        mHandler.sendEmptyMessageDelayed(WHAT_CLOSE_FILE, 1000);
     }
 
     private static class WriteHandler extends Handler {
 
         private final String folder;
         private final int maxFileSize;
+        private FileOutputStream out;
+        private long length = 0;
 
         WriteHandler(Looper looper, String folder, int maxFileSize) {
             super(looper);
@@ -64,60 +71,55 @@ public class DiskLogStrategy extends HandlerThread implements LogStrategy {
         public void handleMessage(Message msg) {
             String content = (String) msg.obj;
 
-            FileWriter fileWriter = null;
-            File logFile = getLogFile(folder, "logs");
+            if (WHAT_CLOSE_FILE == msg.what) {
+                try {
+                    if (out != null) {
+                        out.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    out = null;
+                }
+                return;
+            }
 
             try {
-                fileWriter = new FileWriter(logFile, true);
-                writeLog(fileWriter, content);
-                fileWriter.flush();
-                fileWriter.close();
-            } catch (IOException e) {
-                if (fileWriter != null) {
-                    try {
-                        fileWriter.flush();
-                        fileWriter.close();
-                    } catch (IOException e1) { /* fail silently */ }
+                if (out == null) {
+                    out = getFileOutputStream(folder, "log");
                 }
+                length += content.length();
+                out.write(content.getBytes());
+                out.flush();
+                if (length > maxFileSize) {
+                    out.close();
+                    out = null;
+                }
+            } catch (IOException e) {
             }
         }
 
-        /**
-         * This is always called on a single background thread.
-         * Implementing classes must ONLY write to the fileWriter and nothing more.
-         * The abstract class takes care of everything else including close the stream and catching IOException
-         *
-         * @param fileWriter an instance of FileWriter already initialised to the correct file
-         */
-        private void writeLog(FileWriter fileWriter, String content) throws IOException {
-            fileWriter.append(content);
-        }
-
-        private File getLogFile(String folderName, String fileName) {
+        private FileOutputStream getFileOutputStream(String folderName, String fileName) throws FileNotFoundException {
             File folder = new File(folderName);
             if (!folder.exists()) {
                 folder.mkdirs();
             }
 
-            int newFileCount = 0;
-            File newFile;
-            File existingFile = null;
-
-            newFile = new File(folder, String.format("%s_%s.txt", fileName, newFileCount));
-            while (newFile.exists()) {
-                existingFile = newFile;
-                newFileCount++;
-                newFile = new File(folder, String.format("%s_%s.txt", fileName, newFileCount));
-            }
-
-            if (existingFile != null) {
-                if (existingFile.length() >= maxFileSize) {
-                    return newFile;
+            File newFile = new File(folder, fileName + ".log");
+            if (newFile.exists()) {
+                length = newFile.length();
+                if (length > maxFileSize) {
+                    File temp;
+                    int newFileCount = 0;
+                    do {
+                        temp = new File(folder, String.format("%s_%s.log", fileName, newFileCount++));
+                    } while (temp.exists());
+                    newFile.renameTo(temp);
+                    newFile = new File(folder, fileName + ".log");
                 }
-                return existingFile;
             }
 
-            return newFile;
+            return new FileOutputStream(newFile, true);
         }
     }
 }

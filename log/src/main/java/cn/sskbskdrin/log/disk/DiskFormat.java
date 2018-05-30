@@ -48,7 +48,7 @@ public class DiskFormat implements Format {
         return msg + NEW_LINE;
     }
 
-    static String logLevel(int value) {
+    private static String logLevel(int value) {
         switch (value) {
             case VERBOSE:
                 return "VERBOSE";

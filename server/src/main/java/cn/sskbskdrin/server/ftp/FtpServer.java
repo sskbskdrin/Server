@@ -2,7 +2,8 @@ package cn.sskbskdrin.server.ftp;
 
 import java.net.InetSocketAddress;
 
-import cn.sskbskdrin.server.utils.L;
+import cn.sskbskdrin.log.Logger;
+import cn.sskbskdrin.log.console.ConsolePrinter;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -39,7 +40,7 @@ public class FtpServer {
     }
 
     public static void main(String[] args) {
-        L.d(TAG, "ftp server start");
+        Logger.addPinter(new ConsolePrinter());
         FtpServer.getInstance().start(2100);
     }
 
@@ -75,7 +76,7 @@ public class FtpServer {
 
         @Override
         public void run() {
-            System.out.println("http cn.sskbskdrin.server start");
+            Logger.d("ftp cn.sskbskdrin.server start");
             EventLoopGroup boss = new NioEventLoopGroup();
             EventLoopGroup worker = new NioEventLoopGroup();
             try {
@@ -84,7 +85,7 @@ public class FtpServer {
                 ).childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
-                        L.d(TAG, "initChannel");
+                        Logger.d(TAG, "initChannel");
                         ChannelPipeline pipeline = socketChannel.pipeline();
                         pipeline.addLast("encoder", new FtpEncoder());
                         pipeline.addLast("decoder", new FtpDecoder());
@@ -104,8 +105,7 @@ public class FtpServer {
                 boss.shutdownGracefully();
                 worker.shutdownGracefully();
             }
-            System.out.println("netty socket cn.sskbskdrin.server end");
-            System.out.println("http service end");
+            System.out.println("ftp service end");
         }
     }
 }

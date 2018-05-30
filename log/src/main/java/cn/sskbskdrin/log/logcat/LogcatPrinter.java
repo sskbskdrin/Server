@@ -1,7 +1,8 @@
 package cn.sskbskdrin.log.logcat;
 
+import android.util.Log;
+
 import cn.sskbskdrin.log.Format;
-import cn.sskbskdrin.log.LogStrategy;
 import cn.sskbskdrin.log.Printer;
 
 /**
@@ -20,17 +21,19 @@ import cn.sskbskdrin.log.Printer;
 public class LogcatPrinter implements Printer {
 
     private final Format format;
-    private final LogStrategy strategy;
     private boolean isNew = true;
 
     public LogcatPrinter() {
         this.format = new PrettyFormat();
-        strategy = new LogcatStrategy();
     }
 
     public LogcatPrinter(Format formatStrategy) {
         this.format = formatStrategy;
-        strategy = new LogcatStrategy();
+    }
+
+    public LogcatPrinter setNew(boolean isNew) {
+        this.isNew = isNew;
+        return this;
     }
 
     @Override
@@ -45,11 +48,11 @@ public class LogcatPrinter implements Printer {
             message = format.format(message);
         }
         if (isNew) {
-            strategy.log(priority, tag, " " + System.getProperty("line.separator") + message);
+            Log.println(priority, tag, " " + System.getProperty("line.separator") + message);
         } else {
             String[] result = message.split(System.getProperty("line.separator"));
             for (String msg : result) {
-                strategy.log(priority, tag, msg);
+                Log.println(priority, tag, msg);
             }
         }
     }

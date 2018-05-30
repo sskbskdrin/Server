@@ -5,7 +5,7 @@ import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.sskbskdrin.server.utils.L;
+import cn.sskbskdrin.log.Logger;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -80,7 +80,7 @@ public class FtpDataService {
 
 
     public static ChannelHandlerContext getSocket(SocketAddress address) {
-        L.d(TAG, "getSocket address=" + address.toString());
+        Logger.d(TAG, "getSocket address=" + address.toString());
         synchronized (DataSocketController.class) {
             for (int i = 0; i < mChannels.size(); i++) {
                 SocketAddress temp = mChannels.get(i).channel().remoteAddress();
@@ -114,8 +114,8 @@ public class FtpDataService {
             EventLoopGroup worker = new NioEventLoopGroup();
             try {
                 ServerBootstrap b = new ServerBootstrap();
-                b.group(boss, worker).channel(NioServerSocketChannel.class).localAddress(new InetSocketAddress(mPort)
-                ).childHandler(new ChannelInitializer<SocketChannel>() {
+                b.group(boss, worker).channel(NioServerSocketChannel.class).localAddress(new
+                        InetSocketAddress(mPort)).childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         System.out.println("initChannel");
@@ -124,7 +124,8 @@ public class FtpDataService {
                         pipeline.addLast("encoder", new FtpEncoder());
                         pipeline.addLast("handler", new ServiceHandler());
                     }
-                }).childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 32 * 1024));
+                }).childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark
+                        (1024, 32 * 1024));
                 //绑定监听
                 ChannelFuture f = b.bind().sync();
                 System.out.println("正在监听...");

@@ -10,7 +10,7 @@ public interface LogHelper {
 
     void clearAdapters();
 
-    boolean isGlobalTag();
+    boolean useGlobalTag();
 
     LogHelper tag(String tag);
 

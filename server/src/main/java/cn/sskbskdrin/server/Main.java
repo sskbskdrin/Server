@@ -1,9 +1,9 @@
 package cn.sskbskdrin.server;
 
+import cn.sskbskdrin.log.Logger;
 import cn.sskbskdrin.server.ftp.FtpServer;
 import cn.sskbskdrin.server.http.HttpServer;
 import cn.sskbskdrin.server.socket.NettyServer;
-import cn.sskbskdrin.server.utils.L;
 import cn.sskbskdrin.server.utils.SysUtil;
 
 /**
@@ -16,7 +16,7 @@ public class Main {
     private static final Object lock = new Object();
 
     public static void main(String[] args) {
-        L.d(TAG, "running");
+        Logger.d(TAG, "running");
         if (args != null && args.length > 0) {
             for (String arg : args) {
                 String[] name = arg.split(":");
@@ -40,11 +40,11 @@ public class Main {
                     }
                     NettyServer.getInstance().start(port);
                 } else {
-                    L.e(TAG, "illegal params " + name[0]);
+                    Logger.e(TAG, "illegal params " + name[0]);
                 }
             }
         } else {
-            L.w(TAG, "Lack of parameters");
+            Logger.w(TAG, "Lack of parameters");
         }
         while (true) {
             synchronized (lock) {

@@ -7,7 +7,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.sskbskdrin.server.utils.L;
+import cn.sskbskdrin.log.Logger;
 
 public class DataSocketController {
     private static final String TAG = "DataSocketController";
@@ -19,7 +19,7 @@ public class DataSocketController {
         if (mServerSocket == null) {
             synchronized (DataSocketController.class) {
                 if (mServerSocket == null) {
-                    L.d(TAG, "data socket start");
+                    Logger.d(TAG, "data socket start");
                     mSockets = new ArrayList<>(10);
                     try {
                         mServerSocket = new ServerSocket(port);
@@ -29,11 +29,12 @@ public class DataSocketController {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            L.d(TAG, "data socket run");
+                            Logger.d(TAG, "data socket run");
                             try {
                                 while (true) {
                                     Socket s = mServerSocket.accept();
-                                    L.d(TAG, "data socket accept=" + s.getRemoteSocketAddress().toString());
+                                    Logger.d(TAG, "data socket accept=" + s
+                                            .getRemoteSocketAddress().toString());
                                     synchronized (DataSocketController.class) {
                                         mSockets.add(s);
                                     }
@@ -41,7 +42,7 @@ public class DataSocketController {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             } finally {
-                                L.w(TAG, "data socket close");
+                                Logger.w(TAG, "data socket close");
                                 try {
                                     mServerSocket.close();
                                 } catch (IOException e) {
@@ -58,7 +59,7 @@ public class DataSocketController {
     }
 
     public static Socket getSocket(InetAddress address) {
-        L.d(TAG, "getSocket address=" + address.toString());
+        Logger.d(TAG, "getSocket address=" + address.toString());
         synchronized (DataSocketController.class) {
             for (int i = 0; i < mSockets.size(); i++) {
                 InetAddress temp = mSockets.get(i).getInetAddress();

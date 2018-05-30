@@ -1,6 +1,6 @@
 package cn.sskbskdrin.server.ftp;
 
-import cn.sskbskdrin.server.utils.L;
+import cn.sskbskdrin.log.Logger;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,7 +27,7 @@ public class FtpClientChannel extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(final ChannelHandlerContext ctx) {
-        L.d(TAG, "channelActive");
+        Logger.d(TAG, "channelActive");
         ctx.writeAndFlush("220 welcome to ftp\r\n");
     }
 
@@ -42,16 +42,18 @@ public class FtpClientChannel extends ChannelInboundHandlerAdapter {
             DefaultHttpRequest request = (DefaultHttpRequest) msg;
             DefaultHttpResponse response = null;
             ByteBuf content = Unpooled.wrappedBuffer("220 welcome to ftp\r\n".getBytes());
-            response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, content);
+            response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
+                    content);
             HttpHeaders heads = response.headers();
             heads.add(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
-            heads.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN + "; charset=UTF-8");
+            heads.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN + "; " +
+                    "charset=UTF-8");
             heads.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
             ctx.writeAndFlush(response);
             return;
         }
         String command = msg.toString().trim();
-        L.d(TAG, "channelRead:" + command);
+        Logger.d(TAG, "channelRead:" + command);
         String[] datas = command.split(" ");
         CommandFactory.Command commandSolver = CommandFactory.createCommand(datas[0]);
         if (commandSolver == null) {
@@ -71,23 +73,23 @@ public class FtpClientChannel extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
-        L.d(TAG, "channelReadComplete:");
+        Logger.d(TAG, "channelReadComplete:");
     }
 
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) {
-        L.i(TAG, "channelWritabilityChanged:" + ctx.channel().isWritable());
+        Logger.i(TAG, "channelWritabilityChanged:" + ctx.channel().isWritable());
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        L.e(TAG, "exceptionCaught: ", cause);
+        Logger.e(TAG, "exceptionCaught: ", cause);
         ctx.close();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        L.w(TAG, "channelInactive: ");
+        Logger.w(TAG, "channelInactive: ");
     }
 
     //当前的线程所对应的用户
@@ -142,8 +144,8 @@ public class FtpClientChannel extends ChannelInboundHandlerAdapter {
     }
 
     private boolean loginVerify(CommandFactory.Command command) {
-        return command instanceof CommandFactory.UserCommand || command instanceof CommandFactory.PassCommand ||
-            command instanceof CommandFactory.QuitCommand || isLogin;
+        return command instanceof CommandFactory.UserCommand || command instanceof CommandFactory
+                .PassCommand || command instanceof CommandFactory.QuitCommand || isLogin;
     }
 
     public String getType() {

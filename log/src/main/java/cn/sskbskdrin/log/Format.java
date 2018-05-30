@@ -12,6 +12,8 @@ import cn.sskbskdrin.log.logcat.PrettyFormat;
  */
 public interface Format {
 
+    String NEW_LINE = System.getProperty("line.separator");
+
     String formatTag(int priority, String tag);
 
     String format(String msg);

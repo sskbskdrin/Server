@@ -54,10 +54,10 @@ public class PrettyFormat implements Format {
     private static final char HORIZONTAL_LINE = '│';
     private static final String MIDDLE_BORDER = "================================";
     private static final String SINGLE_DIVIDER =
-        "│------------------------------------------------------------------------------------------------";
-    private static final String THREAD_INFO = "┌" + MIDDLE_BORDER + "    Thread:%s    ID:%s    " + MIDDLE_BORDER;
+            "│------------------------------------------------------------------------------------------------";
+    private static final String THREAD_INFO = "┌" + MIDDLE_BORDER + "    Thread:%s    ID:%s    "
+            + MIDDLE_BORDER;
     private static final String BOTTOM_BORDER = "└" + MIDDLE_BORDER + MIDDLE_BORDER + MIDDLE_BORDER;
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
     private static final String METHOD_INFO = "%s%s.%s (%s:%s)";
 
     private int methodCount = 10;
@@ -96,23 +96,23 @@ public class PrettyFormat implements Format {
             if (i >= trace.length || i < 0) {
                 continue;
             }
-            builder.append(LINE_SEPARATOR);
+            builder.append(NEW_LINE);
             builder.append(HORIZONTAL_LINE);
-            builder.append(String.format(METHOD_INFO, level.toString(), trace[i].getClassName(), trace[i]
-                .getMethodName(), trace[i].getFileName(), trace[i].getLineNumber()));
+            builder.append(String.format(METHOD_INFO, level.toString(), trace[i].getClassName(),
+                    trace[i].getMethodName(), trace[i].getFileName(), trace[i].getLineNumber()));
             level.append("  ");
         }
-        builder.append(LINE_SEPARATOR);
+        builder.append(NEW_LINE);
         builder.append(SINGLE_DIVIDER);
     }
 
     private void logBottomBorder(StringBuilder builder) {
-        builder.append(LINE_SEPARATOR);
+        builder.append(NEW_LINE);
         builder.append(BOTTOM_BORDER);
     }
 
     private void logContent(StringBuilder builder, String msg) {
-        builder.append(LINE_SEPARATOR);
+        builder.append(NEW_LINE);
         builder.append(HORIZONTAL_LINE);
         builder.append(msg);
     }

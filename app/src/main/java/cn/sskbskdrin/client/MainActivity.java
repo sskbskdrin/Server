@@ -29,7 +29,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.main_http).setOnClickListener(this);
         findViewById(R.id.main_socket).setOnClickListener(this);
         Logger.tag("ayke", "");
-        Logger.addPinter(new LogcatPrinter());
+        Logger.addPinter(new LogcatPrinter().setNew(true));
         Logger.addPinter(new DiskPrinter(new DiskLogStrategy(getExternalFilesDir("log").getAbsolutePath(), 0), null));
         findViewById(R.id.main_ftp).postDelayed(new Runnable() {
             @Override

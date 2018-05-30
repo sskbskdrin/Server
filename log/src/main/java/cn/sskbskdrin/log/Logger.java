@@ -84,7 +84,7 @@ public final class Logger {
         }
     }
 
-    public static void printer(LogHelper helper) {
+    public static void helper(LogHelper helper) {
         Logger.helper = helper;
     }
 

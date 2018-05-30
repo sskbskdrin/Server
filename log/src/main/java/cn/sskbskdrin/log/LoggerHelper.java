@@ -66,6 +66,7 @@ class LoggerHelper implements LogHelper {
         try {
             xml = xml.trim();
             if (xml.startsWith("<")) {
+                System.out.println("xml len=" + xml.length());
                 Source xmlInput = new StreamSource(new StringReader(xml));
                 StreamResult xmlOutput = new StreamResult(new StringWriter());
                 Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -93,7 +94,7 @@ class LoggerHelper implements LogHelper {
         if (message == null || message.length() == 0) {
             message = "Empty/NULL log message";
         }
-        if (isGlobalTag()) {
+        if (useGlobalTag()) {
             if (tag != null && tag.length() > 0) {
                 message = tag + ": " + message;
             }
@@ -112,7 +113,7 @@ class LoggerHelper implements LogHelper {
     }
 
     @Override
-    public boolean isGlobalTag() {
+    public boolean useGlobalTag() {
         return localTag != null && localTag.length() > 0;
     }
 

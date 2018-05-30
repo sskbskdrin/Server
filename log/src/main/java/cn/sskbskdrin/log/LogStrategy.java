@@ -1,13 +1,7 @@
 package cn.sskbskdrin.log;
 
-import cn.sskbskdrin.log.disk.DiskLogStrategy;
-import cn.sskbskdrin.log.logcat.LogcatStrategy;
-
 /**
  * Determines destination target for the logs such as Disk, Logcat etc.
- *
- * @see LogcatStrategy
- * @see DiskLogStrategy
  */
 public interface LogStrategy {
 
