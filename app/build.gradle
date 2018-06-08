@@ -22,5 +22,5 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'io.netty:netty-all:4.1.9.Final'
     implementation project(':server')
-    implementation project(':log')
+    implementation 'cn.sskbskdrin:log:+'
 }

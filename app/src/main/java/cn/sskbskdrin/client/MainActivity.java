@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 
-import cn.sskbskdrin.log.Logger;
+import cn.sskbskdrin.log.L;
 import cn.sskbskdrin.log.disk.DiskLogStrategy;
 import cn.sskbskdrin.log.disk.DiskPrinter;
 import cn.sskbskdrin.log.logcat.LogcatPrinter;
@@ -28,13 +28,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.main_ftp).setOnClickListener(this);
         findViewById(R.id.main_http).setOnClickListener(this);
         findViewById(R.id.main_socket).setOnClickListener(this);
-        Logger.tag("ayke", "");
-        Logger.addPinter(new LogcatPrinter().setNew(true));
-        Logger.addPinter(new DiskPrinter(new DiskLogStrategy(getExternalFilesDir("log").getAbsolutePath(), 0), null));
+        L.tag("ayke", "");
+        L.addPinter(new LogcatPrinter().setNew(true));
+        L.addPinter(new DiskPrinter(new DiskLogStrategy(getExternalFilesDir("log").getAbsolutePath(), 0), null));
         findViewById(R.id.main_ftp).postDelayed(new Runnable() {
             @Override
             public void run() {
-                Logger.e("test" + count++);
+                L.e("test" + count++);
                 findViewById(R.id.main_ftp).postDelayed(this, 1000);
             }
         }, 1000);

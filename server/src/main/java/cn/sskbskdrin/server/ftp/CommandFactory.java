@@ -17,13 +17,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import cn.sskbskdrin.log.Logger;
+import cn.sskbskdrin.log.L;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
  * @author ex-keayuan001
  */
-public class CommandFactory {
+class CommandFactory {
     private static final String TAG = "CommandFactory";
 
     interface Command {
@@ -37,9 +37,7 @@ public class CommandFactory {
     }
 
     public static Command createCommand(String type) {
-
-        type = type.toUpperCase();
-        switch (type) {
+        switch (type.toUpperCase()) {
             case "USER":
                 return new UserCommand();
             case "PASS":
@@ -92,20 +90,17 @@ public class CommandFactory {
 
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
-            Logger.i(TAG, "execute the pass command");
-            Logger.i(TAG, "the data is " + data);
-            //获得用户名
             String key = t.USER.get();
             String pass = Share.users.get(key);
 
             String response;
             if (pass.equals(data)) {
-                Logger.i(TAG, "登录成功");
+                L.i(TAG, "登录成功");
                 Share.loginedUser.add(key);
                 t.setIsLogin(true);
                 response = "230 User " + key + " logged in";
             } else {
-                Logger.e(TAG, "登录失败，密码错误");
+                L.e(TAG, "登录失败，密码错误");
                 response = "530   密码错误";
             }
             writer.writeAndFlush(response + "\r\n");
@@ -116,8 +111,7 @@ public class CommandFactory {
 
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
-            Logger.i(TAG, "the data is " + data);
-            writer.write("215 UNIX Type: L8  \r\n");
+            writer.write("215 UNIX  \r\n");
             writer.flush();
         }
     }
@@ -126,7 +120,6 @@ public class CommandFactory {
 
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
-            Logger.i(TAG, "size the data is " + data);
             String desDir = Share.rootDir + t.getNowDir();
             if (data == null || "/".equals(data)) {
                 desDir = Share.rootDir;
@@ -148,16 +141,14 @@ public class CommandFactory {
 
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
-            String response = "200 the port an ip have been transfer";
             String[] iAp = data.split(",");
             String ip = iAp[0] + "." + iAp[1] + "." + iAp[2] + "." + iAp[3];
             int port = 256 * Integer.parseInt(iAp[4]) + Integer.parseInt(iAp[5]);
-            Logger.i(TAG, "ip is " + ip);
-            Logger.i(TAG, "port is " + port);
+            L.d(TAG, "Port ip=" + ip + ":" + port);
             t.setDataIp(ip);
             t.setDataPort(port);
             t.setPortMode(true);
-            writer.writeAndFlush(response + "\r\n");
+            writer.writeAndFlush("200 the port an ip have been transfer\r\n");
         }
     }
 
@@ -167,6 +158,7 @@ public class CommandFactory {
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
             try {
+                t.setPortMode(false);
                 int port = DataSocketController.start();
                 byte[] address = Inet4Address.getLocalHost().getAddress();
 
@@ -185,7 +177,7 @@ public class CommandFactory {
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
             t.setType(data);
-            writer.writeAndFlush("200 命令正确 转 BINARY 模式\r\n");
+            writer.writeAndFlush("200 命令正确 转 " + data + " 模式\r\n");
         }
     }
 
@@ -196,7 +188,6 @@ public class CommandFactory {
          */
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
-            Logger.i(TAG, "pwd data=" + data);
             writer.writeAndFlush("257 \"" + t.getNowDir() + "\" transfer complete...\r\n");
         }
     }
@@ -208,32 +199,29 @@ public class CommandFactory {
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
             String desDir = Share.rootDir + t.getNowDir();
-            Logger.i(TAG, "now:" + t.getNowDir());
-            Logger.i(TAG, "data:" + data);
-            Logger.i(TAG, "des:" + desDir);
+            L.i(TAG, "List now=" + t.getNowDir() + " data=" + data + " des=" + desDir);
             File dir = new File(desDir);
             if (!dir.exists()) {
                 writer.writeAndFlush("212  文件目录不存在\r\n");
-                writer.flush();
             } else {
                 try {
-                    writer.write("150 文件状态正常,ls以 ASCII 方式操作\r\n");
-                    writer.flush();
-                    Logger.i(TAG, "文件目录如下：");
+                    writer.writeAndFlush("150 文件状态正常,ls以 ASCII 方式操作\r\n");
+                    L.i(TAG, "文件目录如下：");
 
                     //开启数据连接，将数据发送给客户端，这里需要有端口号和ip地址
                     Socket s;
                     if (t.isPortMode()) {
                         s = new Socket(t.getDataIp(), t.getDataPort());
                     } else {
-                        InetSocketAddress insocket = (InetSocketAddress) writer.channel().remoteAddress();
-                        s = DataSocketController.getSocket(insocket.getAddress());
+                        InetSocketAddress address = (InetSocketAddress) writer.channel().remoteAddress();
+                        s = DataSocketController.getSocket(address.getAddress());
                         while (s == null) {
-                            Logger.i(TAG, "wait");
+                            L.i(TAG, "wait");
                             Thread.currentThread().join(100);
-                            s = DataSocketController.getSocket(insocket.getAddress());
+                            s = DataSocketController.getSocket(address.getAddress());
                         }
                     }
+                    writer.writeAndFlush("125 数据连接已打开，传输启动\r\n");
                     PrintWriter dataWriter = new PrintWriter(s.getOutputStream());
                     File[] files = dir.listFiles();
                     DateFormat modifyDate = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
@@ -248,14 +236,13 @@ public class CommandFactory {
                         } else {
                             content = "-rw-r--r-- 1 ftp ftp " + file.length() + " " + time + " " + file.getName();
                         }
-                        Logger.i(TAG, "file:" + content);
-                        dataWriter.println(content);
+                        L.i(TAG, "file:" + content);
+                        dataWriter.println(content + "\r\n");
                         dataWriter.flush();
                     }
                     dataWriter.close();
                     s.close();
-                    writer.write("226 传输数据连接结束\r\n");
-                    writer.flush();
+                    writer.writeAndFlush("226 传输数据连接结束\r\n");
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
                 } catch (UnknownHostException e) {
@@ -275,7 +262,6 @@ public class CommandFactory {
     public static class CwdCommand implements Command {
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
-            Logger.i(TAG, "cwd:" + data);
             String dir = Share.rootDir;
             if (data != null && data.length() > 0) {
                 if ("..".equals(data)) {
@@ -299,8 +285,8 @@ public class CommandFactory {
                     dir = Share.rootDir + t.getNowDir();
                 }
             }
-            Logger.i(TAG, "cwd dir:" + dir);
-            Logger.i(TAG, "cwd now:" + t.getNowDir());
+            L.i(TAG, "cwd dir:" + dir);
+            L.i(TAG, "cwd now:" + t.getNowDir());
             File file = new File(dir);
             if (file.exists()) {
                 if (file.isFile()) {
@@ -331,7 +317,7 @@ public class CommandFactory {
                     desDir = Share.rootDir + t.getNowDir() + File.separator + data;
                 }
             }
-            Logger.i(TAG, "RetrCommand file=" + desDir);
+            L.i(TAG, "Retr file=" + desDir);
             File file = new File(desDir);
             if (file.exists()) {
                 try {
@@ -343,7 +329,7 @@ public class CommandFactory {
                         InetSocketAddress insocket = (InetSocketAddress) writer.channel().remoteAddress();
                         s = DataSocketController.getSocket(insocket.getAddress());
                         while (s == null) {
-                            Logger.i(TAG, "wait");
+                            L.i(TAG, "wait");
                             Thread.currentThread().join(100);
                             s = DataSocketController.getSocket(insocket.getAddress());
                         }
@@ -364,8 +350,7 @@ public class CommandFactory {
                     dataOut.flush();
                     dataOut.close();
                     s.close();
-                    writer.write("226 transfer complete...\r\n");
-                    writer.flush();
+                    writer.writeAndFlush("226 transfer complete...\r\n");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -380,8 +365,7 @@ public class CommandFactory {
         @Override
         public void getResult(String data, ChannelHandlerContext writer, FtpClientChannel t) {
             try {
-                writer.write("150 Binary data connection\r\n");
-                writer.flush();
+                writer.writeAndFlush("150 Binary data connection\r\n");
                 String desDir = Share.rootDir + t.getNowDir() + data;
                 if (data != null && data.startsWith("/")) {
                     desDir = Share.rootDir + data;
@@ -390,7 +374,7 @@ public class CommandFactory {
                         desDir = Share.rootDir + t.getNowDir() + File.separator + data;
                     }
                 }
-                Logger.i(TAG, "StoreCommand file=" + desDir);
+                L.i(TAG, "StoreCommand file=" + desDir);
                 File file = new File(desDir);
                 if (file.exists()) {
                     file.delete();
@@ -404,26 +388,24 @@ public class CommandFactory {
                     InetSocketAddress insocket = (InetSocketAddress) writer.channel().remoteAddress();
                     s = DataSocketController.getSocket(insocket.getAddress());
                     while (s == null) {
-                        Logger.i(TAG, "wait");
+                        L.i(TAG, "wait");
                         Thread.currentThread().join(100);
                         s = DataSocketController.getSocket(insocket.getAddress());
                     }
                 }
                 OutputStream out = new FileOutputStream(file);
                 InputStream is = s.getInputStream();
-                byte byteBuffer[] = new byte[10 * 1024];
+                byte[] byteBuffer = new byte[10 * 1024];
                 int length;
                 //这里又会阻塞掉，无法从客户端输出流里面获取数据？是因为客户端没有发送数据么
                 while ((length = is.read(byteBuffer)) != -1) {
                     out.write(byteBuffer, 0, length);
                 }
-                Logger.i(TAG, "传输完成，关闭连接。。。");
+                L.i(TAG, "传输完成，关闭连接。。。");
                 out.close();
                 is.close();
                 s.close();
-                //断开数据连接
-                writer.write("226 transfer complete\r\n");
-                writer.flush();
+                writer.writeAndFlush("226 transfer complete\r\n");
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {

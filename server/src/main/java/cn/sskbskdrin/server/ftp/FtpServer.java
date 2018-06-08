@@ -2,7 +2,7 @@ package cn.sskbskdrin.server.ftp;
 
 import java.net.InetSocketAddress;
 
-import cn.sskbskdrin.log.Logger;
+import cn.sskbskdrin.log.L;
 import cn.sskbskdrin.log.console.ConsolePrinter;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -40,12 +40,12 @@ public class FtpServer {
     }
 
     public static void main(String[] args) {
-        Logger.addPinter(new ConsolePrinter());
         FtpServer.getInstance().start(2100);
     }
 
     public void start(final int port) {
-        System.out.println("start port=" + port);
+        L.addPinter(new ConsolePrinter());
+        L.d("start port=" + port);
         stop();
         mThread = new FtpThread(port);
         mThread.start();
@@ -76,7 +76,7 @@ public class FtpServer {
 
         @Override
         public void run() {
-            Logger.d("ftp cn.sskbskdrin.server start");
+            L.d("ftp start");
             EventLoopGroup boss = new NioEventLoopGroup();
             EventLoopGroup worker = new NioEventLoopGroup();
             try {
@@ -85,7 +85,7 @@ public class FtpServer {
                 ).childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) {
-                        Logger.d(TAG, "initChannel");
+                        L.d(TAG, "initChannel");
                         ChannelPipeline pipeline = socketChannel.pipeline();
                         pipeline.addLast("encoder", new FtpEncoder());
                         pipeline.addLast("decoder", new FtpDecoder());
@@ -94,10 +94,9 @@ public class FtpServer {
                 }).childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(1024, 32 * 1024));
                 //绑定监听
                 ChannelFuture f = b.bind().sync();
-                System.out.println("正在监听...");
+                L.d("正在监听...");
                 mChannel = f.channel();
                 mChannel.closeFuture().sync();
-                System.out.println("sync");
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -105,7 +104,7 @@ public class FtpServer {
                 boss.shutdownGracefully();
                 worker.shutdownGracefully();
             }
-            System.out.println("ftp service end");
+            L.e("ftp service end");
         }
     }
 }

@@ -20,7 +20,7 @@ public class ThreadPool {
 
     private ThreadPool() {
         mExecutorService = new ThreadPoolExecutor(5, 5, KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, new
-                LinkedBlockingQueue<Runnable>());
+            LinkedBlockingQueue<Runnable>());
     }
 
     public static <T> void execute(final Callback<T> callback) {

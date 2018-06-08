@@ -1,18 +1,8 @@
 package cn.sskbskdrin.server.ftp;
 
-import cn.sskbskdrin.log.Logger;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import cn.sskbskdrin.log.L;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.DefaultHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
 
 /**
  * @author ex-keayuan001
@@ -27,7 +17,7 @@ public class FtpClientChannel extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(final ChannelHandlerContext ctx) {
-        Logger.d(TAG, "channelActive");
+        L.d(TAG, "channelActive");
         ctx.writeAndFlush("220 welcome to ftp\r\n");
     }
 
@@ -37,34 +27,20 @@ public class FtpClientChannel extends ChannelInboundHandlerAdapter {
             ctx.writeAndFlush("220 welcome to ftp\r\n");
             return;
         }
-        if (msg instanceof DefaultHttpRequest) {
-            ctx.writeAndFlush("220 welcome to ftp\r\n");
-            DefaultHttpRequest request = (DefaultHttpRequest) msg;
-            DefaultHttpResponse response = null;
-            ByteBuf content = Unpooled.wrappedBuffer("220 welcome to ftp\r\n".getBytes());
-            response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
-                    content);
-            HttpHeaders heads = response.headers();
-            heads.add(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
-            heads.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN + "; " +
-                    "charset=UTF-8");
-            heads.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            ctx.writeAndFlush(response);
-            return;
-        }
+
         String command = msg.toString().trim();
-        Logger.d(TAG, "channelRead:" + command);
-        String[] datas = command.split(" ");
-        CommandFactory.Command commandSolver = CommandFactory.createCommand(datas[0]);
+        L.v(TAG, "channelRead:" + command);
+        String[] data = command.split(" ");
+        CommandFactory.Command commandSolver = CommandFactory.createCommand(data[0]);
         if (commandSolver == null) {
             ctx.writeAndFlush("502 命令未实现\r\n");
         } else {
             if (loginVerify(commandSolver)) {
-                String data = "";
-                if (datas.length >= 2) {
-                    data = datas[1];
+                String content = "";
+                if (data.length >= 2) {
+                    content = data[1];
                 }
-                commandSolver.getResult(data, ctx, this);
+                commandSolver.getResult(content, ctx, this);
             } else {
                 ctx.writeAndFlush("532 执行该命令需要登录，请登录后再执行相应的操作\r\n");
             }
@@ -72,39 +48,41 @@ public class FtpClientChannel extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) {
-        Logger.d(TAG, "channelReadComplete:");
-    }
-
-    @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) {
-        Logger.i(TAG, "channelWritabilityChanged:" + ctx.channel().isWritable());
+        L.i(TAG, "channelWritabilityChanged:" + ctx.channel().isWritable());
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        Logger.e(TAG, "exceptionCaught: ", cause);
+        L.e(TAG, "exceptionCaught: ", cause);
         ctx.close();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        Logger.w(TAG, "channelInactive: ");
+        L.w(TAG, "channelInactive: ");
+        USER.remove();
     }
 
-    //当前的线程所对应的用户
     public final ThreadLocal<String> USER = new ThreadLocal<>();
 
     private boolean isPortMode;
 
+    /**
+     * 数据传输方式 A I
+     */
     private String type;
-
-    //数据连接的ip
+    /**
+     * 数据连接的ip
+     */
     private String dataIp;
-    //数据连接的port
+    /**
+     * 数据连接的port
+     */
     private int dataPort;
-
-    //当前目录
+    /**
+     * 当前目录
+     */
     private String nowDir = "/";
 
     public String getNowDir() {
@@ -144,8 +122,8 @@ public class FtpClientChannel extends ChannelInboundHandlerAdapter {
     }
 
     private boolean loginVerify(CommandFactory.Command command) {
-        return command instanceof CommandFactory.UserCommand || command instanceof CommandFactory
-                .PassCommand || command instanceof CommandFactory.QuitCommand || isLogin;
+        return command instanceof CommandFactory.UserCommand || command instanceof CommandFactory.PassCommand ||
+            command instanceof CommandFactory.QuitCommand || isLogin;
     }
 
     public String getType() {
