@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.netty_versoin = '4.1.35.Final'
+    ext.netty_versoin = '4.1.51.Final'
     
     repositories {
         google()
