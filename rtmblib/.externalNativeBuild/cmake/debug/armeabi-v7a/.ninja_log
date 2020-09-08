@@ -1,0 +1,20 @@
+# ninja log v5
+0	150	0	CMakeFiles/rtmp.dir/rtmp.c.o	c32b6b053ed44071
+2	177	0	CMakeFiles/rtmp.dir/librtmp/log.c.o	aac6615f37c1078f
+1	178	0	CMakeFiles/rtmp.dir/librtmp/hashswf.c.o	c2b687901f6dd8d4
+2	179	0	CMakeFiles/rtmp.dir/librtmp/parseurl.c.o	7fd540ac813aeea7
+1	261	0	CMakeFiles/rtmp.dir/librtmp/amf.c.o	b5af2cd3e967bad4
+8	480	0	CMakeFiles/rtmp.dir/librtmp/rtmp.c.o	5e00204641cb8f4c
+480	547	0	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/armeabi-v7a/librtmp.so	d4b90dbb520dfd4f
+12	447	0	CMakeFiles/rtmp.dir/rtmp.c.o	c32b6b053ed44071
+14	755	0	CMakeFiles/rtmp.dir/librtmp/amf.c.o	b5af2cd3e967bad4
+17	1562	0	CMakeFiles/rtmp.dir/librtmp/rtmp.c.o	5e00204641cb8f4c
+1563	1718	0	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/armeabi-v7a/librtmp.so	d4b90dbb520dfd4f
+6	76	0	build.ninja	a22d272cf0738935
+1	256	0	CMakeFiles/rtmp.dir/rtmp.c.o	f7108c3e998a2fa1
+2	268	0	CMakeFiles/rtmp.dir/librtmp/hashswf.c.o	4139ea9f6903447d
+5	271	0	CMakeFiles/rtmp.dir/librtmp/parseurl.c.o	49a94152a715d566
+3	280	0	CMakeFiles/rtmp.dir/librtmp/log.c.o	ac992c5105a1df13
+1	448	0	CMakeFiles/rtmp.dir/librtmp/amf.c.o	1d3971a56ba2c2a8
+7	757	0	CMakeFiles/rtmp.dir/librtmp/rtmp.c.o	f1620401714bc97c
+757	837	0	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/armeabi-v7a/librtmp.so	a6d812710d86daab

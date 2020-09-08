@@ -1,0 +1,3 @@
+/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/rtmp.dir

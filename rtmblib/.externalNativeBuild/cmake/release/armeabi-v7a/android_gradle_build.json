@@ -1,0 +1,71 @@
+
+{
+	"buildFiles" : 
+	[
+		"/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/CMakeLists.txt"
+	],
+	"cFileExtensions" : [ "c" ],
+	"cleanCommands" : 
+	[
+		"/Users/sskbskdrin/android-sdk/cmake/3.6.4111459/bin/cmake --build /Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/release/armeabi-v7a --target clean"
+	],
+	"libraries" : 
+	{
+		"rtmp-Release-armeabi-v7a" : 
+		{
+			"abi" : "armeabi-v7a",
+			"artifactName" : "rtmp",
+			"buildCommand" : "/Users/sskbskdrin/android-sdk/cmake/3.6.4111459/bin/cmake --build /Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/release/armeabi-v7a --target rtmp",
+			"buildType" : "release",
+			"files" : 
+			[
+				
+				{
+					"flags" : "  --target=armv7-none-linux-androideabi17 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -isystem /Users/sskbskdrin/android-sdk/ndk-bundle/sysroot/usr/include/arm-linux-androideabi -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb -Wa,--noexecstack -Wformat -Werror=format-security  -Oz -DNDEBUG  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/rtmp.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/release/armeabi-v7a"
+				},
+				
+				{
+					"flags" : "  --target=armv7-none-linux-androideabi17 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -isystem /Users/sskbskdrin/android-sdk/ndk-bundle/sysroot/usr/include/arm-linux-androideabi -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb -Wa,--noexecstack -Wformat -Werror=format-security  -Oz -DNDEBUG  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/amf.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/release/armeabi-v7a"
+				},
+				
+				{
+					"flags" : "  --target=armv7-none-linux-androideabi17 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -isystem /Users/sskbskdrin/android-sdk/ndk-bundle/sysroot/usr/include/arm-linux-androideabi -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb -Wa,--noexecstack -Wformat -Werror=format-security  -Oz -DNDEBUG  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/hashswf.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/release/armeabi-v7a"
+				},
+				
+				{
+					"flags" : "  --target=armv7-none-linux-androideabi17 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -isystem /Users/sskbskdrin/android-sdk/ndk-bundle/sysroot/usr/include/arm-linux-androideabi -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb -Wa,--noexecstack -Wformat -Werror=format-security  -Oz -DNDEBUG  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/log.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/release/armeabi-v7a"
+				},
+				
+				{
+					"flags" : "  --target=armv7-none-linux-androideabi17 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -isystem /Users/sskbskdrin/android-sdk/ndk-bundle/sysroot/usr/include/arm-linux-androideabi -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb -Wa,--noexecstack -Wformat -Werror=format-security  -Oz -DNDEBUG  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/parseurl.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/release/armeabi-v7a"
+				},
+				
+				{
+					"flags" : "  --target=armv7-none-linux-androideabi17 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -isystem /Users/sskbskdrin/android-sdk/ndk-bundle/sysroot/usr/include/arm-linux-androideabi -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb -Wa,--noexecstack -Wformat -Werror=format-security  -Oz -DNDEBUG  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/rtmp.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/release/armeabi-v7a"
+				}
+			],
+			"output" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/release/obj/armeabi-v7a/librtmp.so",
+			"toolchain" : "1482531859624955499"
+		}
+	},
+	"toolchains" : 
+	{
+		"1482531859624955499" : 
+		{
+			"cCompilerExecutable" : "/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang",
+			"cppCompilerExecutable" : "/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++"
+		}
+	}
+}

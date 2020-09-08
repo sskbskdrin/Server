@@ -4,6 +4,13 @@
               android:layout_height="match_parent"
               android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/main_ip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="32sp"/>
+
     <Button
         android:id="@+id/main_ftp"
         android:layout_width="wrap_content"
@@ -21,5 +28,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="socket"/>
+
+    <Button
+        android:id="@+id/main_rtsp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="rtsp"/>
+
+    <Button
+        android:id="@+id/main_rtmp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="rtmp"/>
 
 </LinearLayout>

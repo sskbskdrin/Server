@@ -10,13 +10,6 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import cn.sskbskdrin.server.http.HandlerServlet;
-import cn.sskbskdrin.server.http.HttpServer;
 import io.netty.channel.Channel;
 
 /**
@@ -49,19 +42,6 @@ public class ChatActivity extends Activity implements View.OnClickListener {
             }
         }
         image.setImageBitmap(bitmap);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-        try {
-            outputStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        byte[] bytes = outputStream.toByteArray();
-
-        for (byte aByte : bytes) {
-            System.out.print(Integer.toHexString(aByte & 0xff) + " ");
-        }
-        System.out.println();
     }
 
     private void showView(boolean touch) {
@@ -105,10 +85,7 @@ public class ChatActivity extends Activity implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.client_connect:
-                HttpServer.getInstance().start(8088);
-                Map<String, Class<? extends HandlerServlet>> map = new HashMap<>();
-                map.put("/screenshot", Server.class);
-                HttpServer.getInstance().register(map);
+                Main.main(new String[]{"http"});
                 break;
             case R.id.client_send:
                 if (mChannel != null) {

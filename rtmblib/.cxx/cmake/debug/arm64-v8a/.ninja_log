@@ -1,0 +1,8 @@
+# ninja log v5
+2	299	1587301555	CMakeFiles/rtmp.dir/rtmp.c.o	846a7e0e11eecbbc
+5	433	1587301555	CMakeFiles/rtmp.dir/librtmp/hashswf.c.o	b8bc8910165d974e
+7	434	1587301555	CMakeFiles/rtmp.dir/librtmp/log.c.o	262c1ed07e6d7901
+8	441	1587301555	CMakeFiles/rtmp.dir/librtmp/parseurl.c.o	4dacf53901307361
+3	550	1587301555	CMakeFiles/rtmp.dir/librtmp/amf.c.o	256dc039ddd3051c
+11	1130	1587301556	CMakeFiles/rtmp.dir/librtmp/rtmp.c.o	86eb13fed88720e6
+1131	1226	1587301556	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/arm64-v8a/librtmp.so	d15e241c34108530

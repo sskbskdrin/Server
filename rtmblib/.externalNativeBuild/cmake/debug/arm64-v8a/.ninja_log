@@ -1,0 +1,25 @@
+# ninja log v5
+0	190	0	CMakeFiles/rtmp.dir/rtmp.c.o	699f0bba80307701
+1	202	0	CMakeFiles/rtmp.dir/librtmp/hashswf.c.o	76f046ac6b97308f
+1	211	0	CMakeFiles/rtmp.dir/librtmp/log.c.o	43589e28f657ed64
+2	221	0	CMakeFiles/rtmp.dir/librtmp/parseurl.c.o	7bd6825126bd5357
+0	279	0	CMakeFiles/rtmp.dir/librtmp/amf.c.o	d3d33fc2ce537c3e
+5	487	0	CMakeFiles/rtmp.dir/librtmp/rtmp.c.o	fa09f9fd5bd4a35f
+487	539	0	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/arm64-v8a/librtmp.so	1109825b7dafa169
+1	194	0	CMakeFiles/rtmp.dir/rtmp.c.o	699f0bba80307701
+194	276	0	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/arm64-v8a/librtmp.so	1109825b7dafa169
+1	68	0	CMakeFiles/rtmp.dir/rtmp.c.o	699f0bba80307701
+68	130	0	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/arm64-v8a/librtmp.so	1109825b7dafa169
+0	262	0	CMakeFiles/rtmp.dir/rtmp.c.o	699f0bba80307701
+262	355	0	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/arm64-v8a/librtmp.so	1109825b7dafa169
+4	436	0	CMakeFiles/rtmp.dir/librtmp/amf.c.o	d3d33fc2ce537c3e
+5	668	0	CMakeFiles/rtmp.dir/librtmp/rtmp.c.o	fa09f9fd5bd4a35f
+668	767	0	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/arm64-v8a/librtmp.so	1109825b7dafa169
+6	77	0	build.ninja	7b862d1eb9d6ef5b
+1	190	0	CMakeFiles/rtmp.dir/rtmp.c.o	c07954043d3d6c0c
+2	225	0	CMakeFiles/rtmp.dir/librtmp/hashswf.c.o	1554aaf1bd724fc1
+4	230	0	CMakeFiles/rtmp.dir/librtmp/parseurl.c.o	cda3e78da1ef4f0f
+3	233	0	CMakeFiles/rtmp.dir/librtmp/log.c.o	db0f200657cd0745
+1	327	0	CMakeFiles/rtmp.dir/librtmp/amf.c.o	339145281166dee7
+6	724	0	CMakeFiles/rtmp.dir/librtmp/rtmp.c.o	1d83311629d5fadf
+724	789	0	/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/arm64-v8a/librtmp.so	3f867f5262baf231

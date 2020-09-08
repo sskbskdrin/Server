@@ -1,0 +1,71 @@
+
+{
+	"buildFiles" : 
+	[
+		"/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/CMakeLists.txt"
+	],
+	"cFileExtensions" : [ "c" ],
+	"cleanCommands" : 
+	[
+		"/Users/sskbskdrin/android-sdk/cmake/3.6.4111459/bin/cmake --build /Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/arm64-v8a --target clean"
+	],
+	"libraries" : 
+	{
+		"rtmp-Debug-arm64-v8a" : 
+		{
+			"abi" : "arm64-v8a",
+			"artifactName" : "rtmp",
+			"buildCommand" : "/Users/sskbskdrin/android-sdk/cmake/3.6.4111459/bin/cmake --build /Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/arm64-v8a --target rtmp",
+			"buildType" : "debug",
+			"files" : 
+			[
+				
+				{
+					"flags" : "  --target=aarch64-none-linux-android21 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-addrsig -Wa,--noexecstack -Wformat -Werror=format-security  -O0 -fno-limit-debug-info  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/rtmp.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/arm64-v8a"
+				},
+				
+				{
+					"flags" : "  --target=aarch64-none-linux-android21 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-addrsig -Wa,--noexecstack -Wformat -Werror=format-security  -O0 -fno-limit-debug-info  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/amf.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/arm64-v8a"
+				},
+				
+				{
+					"flags" : "  --target=aarch64-none-linux-android21 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-addrsig -Wa,--noexecstack -Wformat -Werror=format-security  -O0 -fno-limit-debug-info  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/hashswf.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/arm64-v8a"
+				},
+				
+				{
+					"flags" : "  --target=aarch64-none-linux-android21 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-addrsig -Wa,--noexecstack -Wformat -Werror=format-security  -O0 -fno-limit-debug-info  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/log.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/arm64-v8a"
+				},
+				
+				{
+					"flags" : "  --target=aarch64-none-linux-android21 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-addrsig -Wa,--noexecstack -Wformat -Werror=format-security  -O0 -fno-limit-debug-info  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/parseurl.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/arm64-v8a"
+				},
+				
+				{
+					"flags" : "  --target=aarch64-none-linux-android21 --gcc-toolchain=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -Drtmp_EXPORTS -I/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp  -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -fno-addrsig -Wa,--noexecstack -Wformat -Werror=format-security  -O0 -fno-limit-debug-info  -fPIC      -c ",
+					"src" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/src/main/jni/librtmp/rtmp.c",
+					"workingDirectory" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/.externalNativeBuild/cmake/debug/arm64-v8a"
+				}
+			],
+			"output" : "/Users/sskbskdrin/Documents/android-project/SskbskdrinServer/rtmblib/build/intermediates/cmake/debug/obj/arm64-v8a/librtmp.so",
+			"toolchain" : "1482531859624955499"
+		}
+	},
+	"toolchains" : 
+	{
+		"1482531859624955499" : 
+		{
+			"cCompilerExecutable" : "/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang",
+			"cppCompilerExecutable" : "/Users/sskbskdrin/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++"
+		}
+	}
+}

@@ -1,17 +1,15 @@
 package cn.sskbskdrin.client;
 
 import android.app.Activity;
+import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
-import cn.sskbskdrin.log.L;
-import cn.sskbskdrin.log.disk.DiskLogStrategy;
-import cn.sskbskdrin.log.disk.DiskPrinter;
-import cn.sskbskdrin.log.logcat.LogcatPrinter;
-import cn.sskbskdrin.server.ftp.FtpServer;
-import cn.sskbskdrin.server.ftp.Share;
-import cn.sskbskdrin.server.http.HttpServer;
-import cn.sskbskdrin.server.socket.NettyServer;
+import cn.sskbskdrin.server.rtmblib.Rtmp;
+import cn.sskbskdrin.server.util.SLog;
 
 /**
  * Created on 2018/5/21.
@@ -19,6 +17,7 @@ import cn.sskbskdrin.server.socket.NettyServer;
  * @author ex-keayuan001
  */
 public class MainActivity extends Activity implements View.OnClickListener {
+    private static final String TAG = "MainActivity";
     int count = 0;
 
     @Override
@@ -28,34 +27,50 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.main_ftp).setOnClickListener(this);
         findViewById(R.id.main_http).setOnClickListener(this);
         findViewById(R.id.main_socket).setOnClickListener(this);
-        L.tag("ayke", "");
-        L.addPinter(new LogcatPrinter().setNew(true));
-        L.addPinter(new DiskPrinter(new DiskLogStrategy(getExternalFilesDir("log").getAbsolutePath(), 0), null));
-        findViewById(R.id.main_ftp).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                L.e("test" + count++);
-                findViewById(R.id.main_ftp).postDelayed(this, 1000);
-            }
-        }, 1000);
+        findViewById(R.id.main_rtsp).setOnClickListener(this);
+        findViewById(R.id.main_rtmp).setOnClickListener(this);
+        ((TextView) findViewById(R.id.main_ip)).setText(getLocalIpAddress());
+        SLog.d(TAG, "main native " + Rtmp.getNativeString());
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.main_ftp:
-                String path = getFilesDir().getAbsolutePath();
-                Share.rootDir = path.substring(0, path.lastIndexOf("/"));
-                Share.rootDir = "/sdcard";
-                FtpServer.getInstance().start(2121);
+                start("ftp");
                 break;
             case R.id.main_http:
-                HttpServer.getInstance().start(8080);
+                start("http");
                 break;
             case R.id.main_socket:
-                NettyServer.getInstance().start(8088);
+                start("socket");
+                break;
+            case R.id.main_rtsp:
+                start("rtsp");
+                break;
+            case R.id.main_rtmp:
+                start("rtmp");
+                //                Rtmp.init("rtmp://172.31.2.57");
                 break;
             default:
         }
+    }
+
+    private void start(final String name) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Main.main(new String[]{name});
+            }
+        }).start();
+    }
+
+    public String getLocalIpAddress() {
+        // 获取WiFi服务
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        // 判断WiFi是否开启
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+        int ip = wifiInfo.getIpAddress();
+        return (ip & 0xFF) + "." + ((ip >> 8) & 0xFF) + "." + ((ip >> 16) & 0xFF) + "." + (ip >> 24 & 0xFF);
     }
 }

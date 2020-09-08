@@ -1,0 +1,8 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'cn.sskbskdrin:log:0.1.5'
+    api "io.netty:netty-transport:$netty_versoin"
+    api "io.netty:netty-codec:$netty_versoin"
+}
