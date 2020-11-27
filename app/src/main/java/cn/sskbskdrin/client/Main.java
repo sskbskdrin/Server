@@ -30,7 +30,6 @@ public class Main {
                     if (port == 0) {
                         port = 8080;
                     }
-                    //                            HttpHandler.register("/screenshot", Server.class);
                     HttpServer.getInstance().start(port);
                 } else if ("ftp".equals(name[0])) {
                     if (port == 0) {

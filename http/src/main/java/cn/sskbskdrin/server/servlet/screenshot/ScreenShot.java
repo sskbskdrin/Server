@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
+import cn.sskbskdrin.server.annotation.API;
 import cn.sskbskdrin.server.http.HandlerServlet;
 import cn.sskbskdrin.server.util.SLog;
 import io.netty.buffer.Unpooled;
@@ -31,6 +32,7 @@ import io.netty.util.AsciiString;
  *
  * @author ex-keayuan001
  */
+@API("/screenShot")
 public class ScreenShot implements HandlerServlet {
     private static final String TAG = "ScreenShot";
     private AsciiString contentType = HttpHeaderValues.TEXT_PLAIN;
@@ -209,7 +211,7 @@ public class ScreenShot implements HandlerServlet {
                 try {
                     Method method = clz.getDeclaredMethod("screenshot", new Class[]{Rect.class, int.class, int.class,
                         int.class});
-                    return (Bitmap) method.invoke(null, new Rect(0, 0, size.x, size.y), size.x, size.y, 90);
+                    return (Bitmap) method.invoke(null, new Rect(), 200, 200, 1);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

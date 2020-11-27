@@ -2,6 +2,8 @@ package cn.sskbskdrin.client;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -31,6 +33,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.main_rtmp).setOnClickListener(this);
         ((TextView) findViewById(R.id.main_ip)).setText(getLocalIpAddress());
         SLog.d(TAG, "main native " + Rtmp.getNativeString());
+        SLog.d(TAG, getPackageCodePath());
+//        getFragmentManager().beginTransaction().add(new Frag(), "frag").commit();
+//        Intent intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS").setData(Uri.fromParts("package",
+//            getPackageName(), (String) null));
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(intent);
     }
 
     @Override

@@ -15,10 +15,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation project(':base')
     api "io.netty:netty-codec-http:$netty_versoin"
+    implementation project(path: ':http-annotation')
+    annotationProcessor project(path: ':http-complie')
 }

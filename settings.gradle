@@ -1,1 +1,3 @@
 include ':app', ':socket', ':base', ':http', ':ftp', ':rtmp', ':rtsp', ':rtmblib'
+include ':http-complie'
+include ':http-annotation'
