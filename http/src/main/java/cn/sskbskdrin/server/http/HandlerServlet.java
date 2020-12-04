@@ -1,5 +1,6 @@
 package cn.sskbskdrin.server.http;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
@@ -10,8 +11,8 @@ import io.netty.handler.codec.http.HttpResponse;
  */
 public interface HandlerServlet {
 
-    HttpResponse get(HttpRequest request);
+    HttpResponse get(ChannelHandlerContext ctx, HttpRequest request);
 
-    HttpResponse post(HttpRequest request);
+    HttpResponse post(ChannelHandlerContext ctx, HttpRequest request);
 
 }

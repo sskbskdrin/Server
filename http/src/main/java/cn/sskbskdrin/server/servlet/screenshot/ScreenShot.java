@@ -16,6 +16,7 @@ import cn.sskbskdrin.server.annotation.API;
 import cn.sskbskdrin.server.http.HandlerServlet;
 import cn.sskbskdrin.server.util.SLog;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -38,7 +39,7 @@ public class ScreenShot implements HandlerServlet {
     private AsciiString contentType = HttpHeaderValues.TEXT_PLAIN;
 
     @Override
-    public HttpResponse get(HttpRequest request) {
+    public HttpResponse get(ChannelHandlerContext ctx, HttpRequest request) {
         DefaultFullHttpResponse response = null;
         String uri = request.uri();
         QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
@@ -112,7 +113,7 @@ public class ScreenShot implements HandlerServlet {
     }
 
     @Override
-    public HttpResponse post(HttpRequest request) {
+    public HttpResponse post(ChannelHandlerContext ctx, HttpRequest request) {
         return null;
     }
 

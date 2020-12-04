@@ -1,13 +1,12 @@
 package cn.sskbskdrin.server.http;
 
-import android.util.Log;
-
 import cn.sskbskdrin.server.base.BaseServer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.stream.ChunkedWriteHandler;
 
 public class HttpServer extends BaseServer {
 
@@ -30,11 +29,11 @@ public class HttpServer extends BaseServer {
 
     @Override
     protected void initChannel(Channel ch) {
-        Log.d(TAG, "initChannel: ");
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast("decoder", new HttpRequestDecoder());
         pipeline.addLast("encoder", new HttpResponseEncoder());
-        pipeline.addLast("aggregator", new HttpObjectAggregator(512 * 1024));
+        pipeline.addLast("aggregator", new HttpObjectAggregator(512 * 1024 * 1024, true));
+        pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
         pipeline.addLast("handler", new HttpHandler());
     }
 }

@@ -4,6 +4,7 @@ import cn.sskbskdrin.server.annotation.API;
 import cn.sskbskdrin.server.http.HandlerServlet;
 import cn.sskbskdrin.server.util.Html;
 import cn.sskbskdrin.server.util.ResponseFactory;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.util.Version;
@@ -16,7 +17,7 @@ import io.netty.util.Version;
 @API("/")
 public class Index implements HandlerServlet {
     @Override
-    public HttpResponse get(HttpRequest request) {
+    public HttpResponse get(ChannelHandlerContext ctx, HttpRequest request) {
         String html = new Html().header(header -> {
             header.meta("charset=\"utf-8\"");
             header.title("HTTP");
@@ -28,7 +29,7 @@ public class Index implements HandlerServlet {
     }
 
     @Override
-    public HttpResponse post(HttpRequest request) {
+    public HttpResponse post(ChannelHandlerContext ctx, HttpRequest request) {
         return null;
     }
 }

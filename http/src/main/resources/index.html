@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="https://cdn.muicss.com/mui-0.10.3/css/mui.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <script src="https://cdn.muicss.com/mui-0.10.3/js/mui.js"></script>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <style>
+      html,
+      body,
+      input,
+      textarea,
+      button {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.004);
+      }
+      body {
+        overflow: hidden;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+      }
+
+      ::-webkit-scrollbar {
+        width: 0.5rem;
+        height: 0.5rem;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        border-radius: 0.25rem;
+        box-shadow: inset 0 0 0.25rem rgba(0, 0, 0, 0.2);
+        background: #535353;
+      }
+
+      ::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 0.25rem rgba(0, 0, 0, 0.2);
+        border-radius: 0.5rem;
+        background: #ededed;
+      }
+
+      ::-webkit-scrollbar-corner {
+        background: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="body">
+      <div id="header"></div>
+      <div>
+        <button class="mui-btn mui-btn--primary" onclick="this.nextElementSibling.click();">上传文件</button>
+        <input id="select-file" type="file" style="display: none" onchange="uploadFile(this)" />
+      </div>
+      <div id="breadcrumb" style="background: lightgrey; padding: 10px 4px"></div>
+      <table id="table">
+        <thead>
+          <tr>
+            <th class="row-name link" onclick="clickSort('name')">
+              文件<i id="thead-name" class="fa fa-chevron-up"></i>
+            </th>
+            <th class="row-size link" onclick="clickSort('size')">
+              大小<i id="thead-size" class="fa fa-chevron-up"></i>
+            </th>
+            <th class="row-time link" onclick="clickSort('time')">
+              修改时间<i id="thead-time" class="fa fa-chevron-up"></i>
+            </th>
+            <th class="row-op link">操作</th>
+          </tr>
+        </thead>
+        <tbody id="tb-body">
+          <tr id="parent">
+            <td class="link row-name" style="border-bottom: 1px solid lightgrey" onclick="showFolder(100000000)">..</td>
+            <td class="row-size">..</td>
+            <td class="row-time">..</td>
+            <td class="row-op">..</td>
+          </tr>
+          <tr id="item">
+            <td id="td-name" class="link" onclick="clickName(this)">
+              <i id="icon" class="fa fa-folder margin"></i>
+              <span id="name"></span>
+            </td>
+            <td id="size" class="row-size">123.6M</td>
+            <td id="time" class="row-time">2020-12-02 18:28:36</td>
+            <td id="option" class="row-op">
+              <span class="link margin" onclick="download(this)">下载</span>
+              <span class="link margin" onclick="rename(this)">重命名</span>
+              <span class="link margin" onclick="edit(this)">编辑</span>
+              <span class="link margin" onclick="deleteFile(this)">删除</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div id="fooder"></div>
+      <input type="file" id="down-file" style="display: none" />
+    </div>
+  </body>
+  <style>
+    .body {
+      height: 80%;
+      margin: 5rem auto;
+      max-width: 1080px;
+    }
+
+    #table {
+      text-align: left;
+      width: 100%;
+      height: 80%;
+      margin: 0;
+    }
+
+    #table tbody {
+      display: block;
+      overflow-y: auto;
+      height: 100%;
+    }
+
+    #table thead tr,
+    #table tbody tr {
+      display: table;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    #table > thead > tr > th {
+      line-height: 1.5;
+      padding: 10px;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.12);
+      font-weight: 700;
+    }
+    #table > tbody > tr > td {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      padding: 6px 10px;
+    }
+    #header {
+      height: 10%;
+      background: wheat;
+    }
+
+    #fooder {
+      height: 5%;
+      background: steelblue;
+    }
+
+    .row-name {
+    }
+
+    .row-size {
+      width: 8%;
+      min-width: 2rem;
+      text-align: right;
+    }
+    .row-time {
+      width: 16%;
+      max-width: 10rem;
+    }
+    .row-op {
+      width: 20%;
+    }
+    .link {
+      cursor: pointer;
+      color: cornflowerblue;
+    }
+    .margin {
+      margin: auto 4px;
+    }
+  </style>
+  <script>
+    var path = [];
+    var itemEl = null;
+    var list = [
+      { name: "test3.exe", size: 3242464, time: 1600874625000, isFile: true, ext: "exe" },
+      { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "txt" },
+      { name: "test1", size: 0, time: 1607089225000, isFile: false, ext: "zip" }
+    ];
+    var sortName = "name";
+    var increase = true;
+
+    function dateFormat(date) {
+      var fix = t => {
+        return (t < 10 ? "0" : "") + t;
+      };
+      let cur = new Date();
+      if (date.getFullYear() == cur.getFullYear()) {
+        if (date.getMonth() == cur.getMonth()) {
+          if (date.getDate() == cur.getDate()) {
+            return fix(date.getHours()) + ":" + fix(date.getMinutes()) + ":" + fix(date.getSeconds());
+          }
+        }
+      }
+      return (
+        date.getFullYear() +
+        "-" +
+        fix(date.getMonth() + 1) +
+        "-" +
+        fix(date.getDate()) +
+        " " +
+        fix(date.getHours()) +
+        ":" +
+        fix(date.getMinutes())
+      );
+    }
+
+    function clickSort(name) {
+      if (name == sortName) {
+        increase = !increase;
+      } else {
+        sortName = name;
+      }
+      update();
+    }
+
+    function sort() {
+      var nameF = (a, b) => {
+        if (a.isFile != b.isFile) {
+          return a.isFile ? 1 : -1;
+        }
+        return (increase ? a.name > b.name : a.name < b.name) ? 1 : -1;
+      };
+      var sizeF = (a, b) => {
+        if (a.size == b.size) return nameF(a, b);
+        else return increase ? a.size - b.size : b.size - a.size;
+      };
+      var timeF = (a, b) => {
+        if (a.time == b.time) return nameF(a, b);
+        else return increase ? a.time - b.time : b.time - a.time;
+      };
+      $("#thead-name").hide();
+      $("#thead-size").hide();
+      $("#thead-time").hide();
+      var el = $("#thead-" + sortName);
+      if (sortName == "size") {
+        list.sort(sizeF);
+      } else if (sortName == "time") {
+        list.sort(timeF);
+      } else {
+        list.sort(nameF);
+      }
+
+      if (increase) {
+        el.addClass("fa-chevron-up");
+        el.removeClass("fa-chevron-down");
+      } else {
+        el.removeClass("fa-chevron-up");
+        el.addClass("fa-chevron-down");
+      }
+      el.show();
+    }
+
+    function update() {
+      sort();
+      if (path.length == 0) {
+        $("#parent").hide();
+      } else {
+        $("#parent").show();
+      }
+      var sb = "<span class='link margin' onclick='showFolder(-1)'>根目录</span>/";
+
+      for (let i = 0; i < path.length; ++i) {
+        if (i == path.length - 1) {
+          sb += "<span class='margin'>" + path[i] + "</span>/";
+        } else {
+          sb += "<span class='link margin' onclick='showFolder(" + i + ")'>" + path[i] + "</span>/";
+        }
+      }
+      $("#breadcrumb").html(sb);
+
+      var tbbody = $("#tb-body");
+      var parent = $("#parent");
+      parent.remove();
+      tbbody.empty();
+      parent.appendTo(tbbody);
+      for (let i = 0; i < list.length; ++i) {
+        let item = list[i];
+        var trEl = itemEl.clone();
+        let icon = trEl.find("#icon");
+        icon.removeClass();
+        icon.addClass("fa").addClass("margin");
+        if (item.isFile) {
+          switch (item.ext) {
+            case "zip":
+            case "rar":
+              icon.addClass("fa-file-archive-o");
+              break;
+            case "txt":
+              icon.addClass("fa-file-text-o");
+              break;
+            default:
+              icon.addClass("fa-question-circle");
+              break;
+          }
+        } else {
+          icon.addClass("fa-folder");
+        }
+        trEl.find("#td-name").data("data", item);
+        trEl.find("#name").text(item.name);
+        if (item.isFile) {
+          let s = ["B", "KB", "MB", "GB", "TB"];
+          let size = item.size;
+          let unit = 0;
+          while (size > 1024) {
+            unit++;
+            size /= 1024;
+          }
+          trEl.find("#size").text(size.toFixed(2) + s[unit]);
+        } else {
+          trEl.find("#size").text("");
+        }
+        if (item.time > 0) {
+          trEl.find("#time").text(dateFormat(new Date(item.time)));
+        } else {
+          trEl.find("#time").text("");
+        }
+        var spans = trEl.find("#option").find("span");
+        $.map(spans, self => {
+          $(self).data("data", item);
+        });
+        trEl.appendTo(tbbody);
+      }
+    }
+
+    function uploadFile(self) {
+      var input = $(self);
+      console.log("select file");
+      console.log(self.baseURI);
+
+      var url = "/files/api/";
+      for (let i = 0; i < path.length; ++i) {
+        url += path[i] + "/";
+      }
+      var formData = new FormData();
+      formData.append("file", self.files[0]);
+      $.ajax({
+        url: url,
+        type: "POST",
+        cache: false,
+        data: formData,
+        processData: false,
+        contentType: false,
+        xhr: function () {
+          var xhr = new XMLHttpRequest();
+          //使用XMLHttpRequest.upload监听上传过程，注册progress事件，打印回调函数中的event事件
+          xhr.upload.addEventListener("progress", function (e) {
+            console.log(e);
+            //loaded代表上传了多少
+            //total代表总数为多少
+            var progressRate = (e.loaded / e.total) * 100 + "%";
+            //通过设置进度条的宽度达到效果
+            console.log(progressRate);
+          });
+          return xhr;
+        },
+        success: res => {
+          console.log("sucess");
+          console.log(res);
+          alert("上传成功");
+        },
+        error: e => {
+          console.log("error");
+          console.log(e);
+          alert("上传失败");
+        }
+      });
+    }
+
+    function clickName(self) {
+      let data = $(self).data("data");
+      console.log($(self));
+      console.log(data);
+      if (data.isFile) {
+        download(self);
+      } else {
+        showFolder(99999999, data.name);
+      }
+    }
+
+    function showFolder(index, name) {
+      if (100000000 == index) {
+        index = path.length - 2;
+      }
+      var url = "/";
+      if (index > path.length) {
+        index = path.length - 1;
+      }
+      for (let i = 0; i <= index; ++i) {
+        url += path[i] + "/";
+      }
+      if (name != null && name.length > 0) url += name + "/";
+
+      $.get("files/api" + url, (data, status) => {
+        path.length = 0;
+        for (let n of url.split("/")) {
+          if (n.length > 0) path.push(n);
+        }
+        list = data.data;
+        update();
+      });
+    }
+
+    function download(self) {
+      console.log("download");
+      let data = $(self).data("data");
+      console.log(data);
+      var url = "/";
+      for (let i = 0; i < path.length; ++i) {
+        url += path[i] + "/";
+      }
+      url += data.name;
+      console.log("download " + url);
+      var eleLink = document.createElement("a");
+      eleLink.download = data.name;
+      eleLink.style.display = "none";
+      eleLink.href = "files/api" + url;
+      document.body.appendChild(eleLink);
+      eleLink.click();
+      document.body.removeChild(eleLink);
+    }
+    function rename(self) {
+      console.log("rename");
+      let data = $(self).data("data");
+      console.log(data);
+    }
+    function edit(self) {
+      console.log("edit");
+      let data = $(self).data("data");
+      console.log(data);
+    }
+    function deleteFile(self) {
+      console.log("delete");
+      let data = $(self).data("data");
+      console.log(data);
+    }
+    $(document).ready(() => {
+      itemEl = $("#item");
+      itemEl.remove();
+      $.get("files/api", function (data, status) {
+        list = data.data;
+        clickSort("name");
+      });
+      clickSort("name");
+    });
+  </script>
+</html>

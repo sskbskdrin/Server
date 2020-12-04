@@ -87,7 +87,6 @@ public class SysUtil {
         return screenshot(0, 0, 0, 0);
     }
 
-
     public static int parseInt(String str) {
         if (TextUtils.isEmpty(str)) {
             return 0;

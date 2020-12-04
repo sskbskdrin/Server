@@ -7,9 +7,6 @@ import cn.sskbskdrin.log.L;
  * @date 2019/April/26
  */
 public class SLog {
-    public static void append(String msg) {
-        L.append(msg);
-    }
 
     public static void v(String tag, String msg) {
         L.v(tag, msg);
@@ -25,6 +22,10 @@ public class SLog {
 
     public static void w(String tag, String msg) {
         L.w(tag, msg);
+    }
+
+    public static void w(String tag, String msg, Throwable e) {
+        L.w(tag, msg, e);
     }
 
     public static void e(String tag, String msg) {

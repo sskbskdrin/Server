@@ -39,7 +39,7 @@ public class ResponseFactory {
         return response;
     }
 
-    public static HttpResponse error(String code, String msg) {
+    public static HttpResponse code(String code, String msg) {
         JSONObject obj = new JSONObject();
         try {
             obj.put("code", code);

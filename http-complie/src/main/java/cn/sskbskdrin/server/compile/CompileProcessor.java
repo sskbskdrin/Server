@@ -1,6 +1,8 @@
 package cn.sskbskdrin.server.compile;
 
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -73,7 +75,22 @@ public class CompileProcessor extends AbstractProcessor {
                 fileType.emitClass("Route", EnumSet.of(Modifier.FINAL), null, null, classType -> {
                     classType.field("HashMap<String, Class<? extends HandlerServlet>>", "map",
                         EnumSet.of(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL), "new HashMap<>()");
+                    StringBuilder html = new StringBuilder();
+                    try {
+                        Reader reader = new FileReader("http/src/main/resources/index.html");
+                        char[] buf = new char[1024];
+                        int ret;
+                        while ((ret = reader.read(buf)) != -1) {
+                            html.append(buf, 0, ret);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     classType.block(true, blockType -> {
+                        blockType.statement("cn.sskbskdrin.server.servlet.file.Files.indexHtml = \"%s\"",
+                            html.toString()
+                            .replaceAll("\"", "\\\\\"")
+                            .replaceAll("\n", "\\\\n"));
                         for (Element element : roundEnv.getElementsAnnotatedWith(API.class)) {
                             blockType.statement("map.put(\"%s\", %s)", element.getAnnotation(API.class).value(), element
                                 .asType()
