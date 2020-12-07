@@ -97,8 +97,31 @@
           </tr>
         </tbody>
       </table>
-      <div id="fooder"></div>
+      <div id="fooder">
+        Made with ♥ by <a href="https://share.iyuan.site" style="color: lightgray" target="_blank">iyuan share</a>
+      </div>
       <input type="file" id="down-file" style="display: none" />
+    </div>
+    <div id="overlay">
+      <div id="overlay-content"></div>
+      <i id="overlay-close" class="fa fa-3x fa-times-circle" onclick="$(this).parent().hide()"></i>
+    </div>
+    <div
+      style="
+        z-index: 10;
+        left: 0;
+        top: 0;
+        position: absolute;
+        background: rgba(0, 0, 0, 0.8);
+        width: 30rem;
+        height: 30rem;
+        display: none;
+      "
+    >
+      <h2>提示</h2>
+      <p>message</p>
+      <button class="mui-btn mui-btn--small mui-btn--primary">确定</button>
+      <button class="mui-btn mui-btn--small mui-btn--warnning">取消</button>
     </div>
   </body>
   <style>
@@ -106,6 +129,41 @@
       height: 80%;
       margin: 5rem auto;
       max-width: 1080px;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      width: inherit;
+      height: inherit;
+      z-index: 5000;
+      display: none;
+    }
+
+    #overlay-close {
+      position: absolute;
+      right: 2rem;
+      top: 2rem;
+      cursor: pointer;
+    }
+
+    #overlay-content {
+      position: absolute;
+      background: white;
+      transform: translate(-50%, -50%);
+      border-radius: 0.5rem;
+      left: 50%;
+      top: 50%;
+      margin: 0 auto;
+      max-width: 1080px;
+      max-height: 90%;
+      overflow: hidden;
+    }
+
+    #overlay-content > * {
+      display: block;
     }
 
     #table {
@@ -144,8 +202,10 @@
     }
 
     #fooder {
-      height: 5%;
-      background: steelblue;
+      background: #2196f3;
+      line-height: 1.5;
+      padding: 0.5rem;
+      color: white;
     }
 
     .row-name {
@@ -176,11 +236,95 @@
     var itemEl = null;
     var list = [
       { name: "test3.exe", size: 3242464, time: 1600874625000, isFile: true, ext: "exe" },
+      { name: "test2.rar", size: 3262353, time: 1600397865000, isFile: true, ext: "rar" },
+      { name: "test2.zip", size: 3262353, time: 1600397865000, isFile: true, ext: "zip" },
+      { name: "test2.jpg", size: 3262353, time: 1600397865000, isFile: true, ext: "jpg" },
+      { name: "test2.jpeg", size: 3262353, time: 1600397865000, isFile: true, ext: "jpeg" },
+      { name: "test2.jpeg", size: 3262353, time: 1600397865000, isFile: true, ext: "png" },
+      { name: "test2.doc", size: 3262353, time: 1600397865000, isFile: true, ext: "doc" },
+      { name: "test2.docx", size: 3262353, time: 1600397865000, isFile: true, ext: "docx" },
+      { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "ogg" },
+      { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "mp3" },
+      { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "mp4" },
+      { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "avi" },
       { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "txt" },
+      { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "log" },
+      { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "pdf" },
+      { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "xls" },
+      { name: "test2.txt", size: 3262353, time: 1600397865000, isFile: true, ext: "xlsx" },
       { name: "test1", size: 0, time: 1607089225000, isFile: false, ext: "zip" }
     ];
     var sortName = "name";
     var increase = true;
+
+    function getPath(pre, after) {
+      var url = pre != null ? pre : "/";
+      for (let i = 0; i < path.length; ++i) {
+        url += path[i] + "/";
+      }
+      if (after != null) return url + after;
+      return url;
+    }
+
+    function showOverlay(el) {
+      var overlay = $("#overlay");
+      var contentEl = overlay.find("#overlay-content");
+      contentEl.empty();
+      contentEl.append($(el));
+      overlay.show();
+    }
+
+    function showDialog(tip, ok) {
+      let root = $("<div></div>");
+      root.css("padding", "1rem");
+      root.css("color", "gray");
+      root.append($("<h3>提示</h3>"));
+      root.append($("<p>" + tip + "</p>"));
+      let okEl = $('<button class="mui-btn mui-btn--small mui-btn--primary mui-btn--flat">确定</button>');
+      okEl.css("margin-left", "10rem");
+      okEl.bind("click", ok);
+      root.append(okEl);
+      let cancelEl = $('<button class="mui-btn mui-btn--small mui-btn--danger mui-btn--flat">取消</button>');
+      cancelEl.bind("click", () => {
+        $("#overlay").hide();
+      });
+      root.append(cancelEl);
+      showOverlay(root);
+    }
+
+    function preview(self) {
+      var data = $(self).data("data");
+      var url = getPath("files/api/", data.name);
+      var maxWidth = $("#overlay").width() * 0.9;
+      var maxHeight = $("#overlay").height() * 0.9;
+
+      if (data.ext == "jpg" || data.ext == "png" || data.ext == "jpeg") {
+        showOverlay(
+          $('<img src="' + url + '" style="max-width:' + maxWidth + "px; max-height:" + maxHeight + 'px;"></img>')
+        );
+      }
+      if (data.ext == "mp4" || data.ext == "avi") {
+        showOverlay(
+          $(
+            '<video controls src="' +
+              url +
+              '" autoplay style="max-width:' +
+              maxWidth +
+              "px; max-height:" +
+              maxHeight +
+              'px;"></video>'
+          )
+        );
+      }
+      if (data.ext == "mp3" || data.ext == "ogg") {
+        showOverlay($('<audio controls src="' + url + '" autoplay></audio>'));
+      }
+      if (data.ext == "txt" || data.ext == "log") {
+        let p = $('<p style="padding:1rem;"></p>');
+        p.load(getPath("files/api/", data.name));
+        showOverlay(p);
+      }
+    }
 
     function dateFormat(date) {
       var fix = t => {
@@ -282,21 +426,58 @@
         let icon = trEl.find("#icon");
         icon.removeClass();
         icon.addClass("fa").addClass("margin");
+        icon.css({ padding: "0.2rem", color: "white", "border-radius": "0.2rem" });
         if (item.isFile) {
           switch (item.ext) {
             case "zip":
             case "rar":
               icon.addClass("fa-file-archive-o");
+              icon.css("background", "BlueViolet");
               break;
             case "txt":
+            case "log":
               icon.addClass("fa-file-text-o");
+              icon.css("background", "DarkTurquoise");
+              break;
+            case "pdf":
+              icon.addClass("fa-file-pdf-o");
+              icon.css("background", "FireBrick");
+              break;
+            case "doc":
+            case "docx":
+              icon.addClass("fa-file-word-o");
+              icon.css("background", "cornflowerblue");
+              break;
+            case "xls":
+            case "xlsx":
+              icon.addClass("fa-file-excel-o");
+              icon.css("background", "LimeGreen");
+              break;
+            case "jpg":
+            case "jpeg":
+            case "png":
+              icon.addClass("fa-file-image-o");
+              icon.css("background", "PowderBlue");
+              break;
+            case "mp4":
+            case "avi":
+              icon.addClass("fa-file-video-o");
+              icon.css("background", "MidnightBlue");
+              break;
+            case "mp3":
+            case "ogg":
+              icon.addClass("fa-file-audio-o");
+              icon.css("background", "MidnightBlue");
               break;
             default:
               icon.addClass("fa-question-circle");
+              icon.css("background", "gray");
               break;
           }
         } else {
           icon.addClass("fa-folder");
+          icon.addClass("fa-lg");
+          icon.css({ background: "", color: "DodgerBlue", padding: "0" });
         }
         trEl.find("#td-name").data("data", item);
         trEl.find("#name").text(item.name);
@@ -330,14 +511,10 @@
       console.log("select file");
       console.log(self.baseURI);
 
-      var url = "/files/api/";
-      for (let i = 0; i < path.length; ++i) {
-        url += path[i] + "/";
-      }
       var formData = new FormData();
       formData.append("file", self.files[0]);
       $.ajax({
-        url: url,
+        url: getPath("/files/api/"),
         type: "POST",
         cache: false,
         data: formData,
@@ -345,13 +522,9 @@
         contentType: false,
         xhr: function () {
           var xhr = new XMLHttpRequest();
-          //使用XMLHttpRequest.upload监听上传过程，注册progress事件，打印回调函数中的event事件
           xhr.upload.addEventListener("progress", function (e) {
             console.log(e);
-            //loaded代表上传了多少
-            //total代表总数为多少
             var progressRate = (e.loaded / e.total) * 100 + "%";
-            //通过设置进度条的宽度达到效果
             console.log(progressRate);
           });
           return xhr;
@@ -374,7 +547,8 @@
       console.log($(self));
       console.log(data);
       if (data.isFile) {
-        download(self);
+        preview(self);
+        // download(self);
       } else {
         showFolder(99999999, data.name);
       }
@@ -407,16 +581,10 @@
       console.log("download");
       let data = $(self).data("data");
       console.log(data);
-      var url = "/";
-      for (let i = 0; i < path.length; ++i) {
-        url += path[i] + "/";
-      }
-      url += data.name;
-      console.log("download " + url);
       var eleLink = document.createElement("a");
       eleLink.download = data.name;
       eleLink.style.display = "none";
-      eleLink.href = "files/api" + url;
+      eleLink.href = getPath("files/api", data.name);
       document.body.appendChild(eleLink);
       eleLink.click();
       document.body.removeChild(eleLink);
@@ -426,15 +594,19 @@
       let data = $(self).data("data");
       console.log(data);
     }
+
     function edit(self) {
       console.log("edit");
       let data = $(self).data("data");
       console.log(data);
     }
+
     function deleteFile(self) {
-      console.log("delete");
       let data = $(self).data("data");
-      console.log(data);
+      showDialog("确定删除文件“" + data.name + "”?", () => {
+        console.log("delete");
+        console.log(data);
+      });
     }
     $(document).ready(() => {
       itemEl = $("#item");

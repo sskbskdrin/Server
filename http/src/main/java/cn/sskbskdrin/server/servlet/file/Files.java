@@ -53,7 +53,7 @@ public class Files implements HandlerServlet {
     @Override
     public HttpResponse get(ChannelHandlerContext ctx, HttpRequest request) {
         QueryStringDecoder decoder = new QueryStringDecoder(request.uri());
-        String path = decoder.rawPath();
+        String path = decoder.path();
         if ("/files".equalsIgnoreCase(path)) { // 加载页面
             return ResponseFactory.successHtml(indexHtml);
         } else if (path.startsWith("/files/api")) {
@@ -179,7 +179,7 @@ public class Files implements HandlerServlet {
         if (file.isDirectory()) return "";
         String name = file.getName();
         int in = name.lastIndexOf('.');
-        if (in > 0) return name.substring(in);
+        if (in > 0) return name.substring(in + 1);
         else return null;
     }
 
