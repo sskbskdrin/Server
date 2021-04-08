@@ -2,13 +2,16 @@ package cn.sskbskdrin.client;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 
 import cn.sskbskdrin.server.rtmblib.Rtmp;
 import cn.sskbskdrin.server.util.SLog;
@@ -31,14 +34,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
         findViewById(R.id.main_socket).setOnClickListener(this);
         findViewById(R.id.main_rtsp).setOnClickListener(this);
         findViewById(R.id.main_rtmp).setOnClickListener(this);
-        ((TextView) findViewById(R.id.main_ip)).setText(getLocalIpAddress());
+        String ip = getLocalIpAddress();
+        ((TextView) findViewById(R.id.main_ip)).setText(ip.startsWith("0.") ? getPhoneIp() : ip);
         SLog.d(TAG, "main native " + Rtmp.getNativeString());
         SLog.d(TAG, getPackageCodePath());
-//        getFragmentManager().beginTransaction().add(new Frag(), "frag").commit();
-//        Intent intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS").setData(Uri.fromParts("package",
-//            getPackageName(), (String) null));
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        startActivity(intent);
+        //        getFragmentManager().beginTransaction().add(new Frag(), "frag").commit();
+        //        Intent intent = new Intent("android.settings.APPLICATION_DETAILS_SETTINGS").setData(Uri.fromParts
+        //        ("package",
+        //            getPackageName(), (String) null));
+        //        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //        startActivity(intent);
     }
 
     @Override
@@ -49,6 +54,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.main_http:
                 start("http");
+                //                SimpleWebServer.main(new String[]{"-d", "/sdcard/"});
                 break;
             case R.id.main_socket:
                 start("socket");
@@ -58,18 +64,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.main_rtmp:
                 start("rtmp");
-                //                Rtmp.init("rtmp://172.31.2.57");
+                //                                Rtmp.init("rtmp://172.31.2.57");
                 break;
             default:
         }
     }
 
     private void start(final String name) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Main.main(new String[]{name});
-            }
+        new Thread(() -> {
+            //            SimpleWebServer.main(new String[]{"-d", "/sdcard/"});
+            Main.main(new String[]{name});
         }).start();
     }
 
@@ -80,5 +84,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         int ip = wifiInfo.getIpAddress();
         return (ip & 0xFF) + "." + ((ip >> 8) & 0xFF) + "." + ((ip >> 16) & 0xFF) + "." + (ip >> 24 & 0xFF);
+    }
+
+    private String getPhoneIp() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+                        //if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet6Address) {
+                        return inetAddress.getHostAddress().toString();
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        return null;
     }
 }

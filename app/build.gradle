@@ -35,4 +35,7 @@ dependencies {
     implementation project(':http')
     implementation project(':rtmp')
     implementation project(':rtmblib')
+    implementation project(':file')
+    implementation('org.nanohttpd:nanohttpd:+')
+    implementation('org.nanohttpd:nanohttpd-webserver:+')
 }

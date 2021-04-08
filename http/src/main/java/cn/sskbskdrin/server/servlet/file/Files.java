@@ -15,6 +15,7 @@ import java.nio.channels.FileChannel;
 import cn.sskbskdrin.log.L;
 import cn.sskbskdrin.server.annotation.API;
 import cn.sskbskdrin.server.http.HandlerServlet;
+import cn.sskbskdrin.server.util.FileUtils;
 import cn.sskbskdrin.server.util.ResponseFactory;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -69,14 +70,7 @@ public class Files implements HandlerServlet {
             JSONArray array = new JSONArray();
             try {
                 for (File listFile : file.listFiles()) {
-                    JSONObject object = new JSONObject();
-                    object.put("name", listFile.getName());
-                    object.put("time", listFile.lastModified());
-                    object.put("isFile", listFile.isFile());
-                    object.put("ext", getExt(listFile));
-                    object.put("size", listFile.isFile() ? listFile.length() : 0);
-                    object.put("name", listFile.getName());
-                    array.put(object);
+                    array.put(FileUtils.getProperties(listFile).toJson());
                 }
                 ret.put("code", 200);
                 ret.put("msg", "success");
@@ -152,7 +146,7 @@ public class Files implements HandlerServlet {
             //                "attachment; filename=\"" + URLEncoder.encode(file.getName(), "UTF-8") + "\";");
             ctx.write(response);
 
-            ChannelFuture sendFileFuture = ctx.write(new ChunkedFile(file, 1024 * 10), ctx.newProgressivePromise());
+            ChannelFuture sendFileFuture = ctx.write(new ChunkedFile(file), ctx.newProgressivePromise());
             sendFileFuture.addListener(new ChannelProgressiveFutureListener() {
                 @Override
                 public void operationComplete(ChannelProgressiveFuture future) throws Exception {
@@ -182,5 +176,4 @@ public class Files implements HandlerServlet {
         if (in > 0) return name.substring(in + 1);
         else return null;
     }
-
 }

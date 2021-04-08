@@ -32,7 +32,7 @@ public class HttpServer extends BaseServer {
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast("decoder", new HttpRequestDecoder());
         pipeline.addLast("encoder", new HttpResponseEncoder());
-        pipeline.addLast("aggregator", new HttpObjectAggregator(512 * 1024 * 1024, true));
+        pipeline.addLast("aggregator", new HttpObjectAggregator(8 * 1024 * 1024, true));
         pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
         pipeline.addLast("handler", new HttpHandler());
     }
