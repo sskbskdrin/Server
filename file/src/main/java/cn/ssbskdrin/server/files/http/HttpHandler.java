@@ -6,18 +6,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 
 import cn.ssbskdrin.server.files.ByteBufferUtil;
-import cn.ssbskdrin.server.files.ChannelContext;
+import cn.ssbskdrin.server.files.Log;
+import cn.ssbskdrin.server.files.core.ChannelContext;
 
 /**
  * Created by sskbskdrin on 2021/4/11.
@@ -25,56 +23,53 @@ import cn.ssbskdrin.server.files.ChannelContext;
  * @author sskbskdrin
  */
 public class HttpHandler extends ChannelContext {
-    int readLen;
+    private int readLen;
     private int headerLen = 0;
     Request request;
-    private ByteBuffer buffer;
 
-    public HttpHandler(ByteChannel channel) {
-        super(channel);
+    Response response;
+    SendResponse sendResponse = new SendResponse() {
+        @Override
+        public void send(Response rsp) {
+            response = rsp;
+            try {
+                buffer.clear();
+                response.write(buffer);
+                buffer.flip();
+                switchMode(false);
+            } catch (ClosedChannelException e) {
+                onException(e);
+            }
+        }
+    };
+
+    @Override
+    protected boolean isWriteComplete() {
+        buffer.compact();
+        buffer.flip();
+        return super.isWriteComplete();
     }
 
     @Override
-    public void onReceive(ByteChannel channel, ByteBuffer buf) throws Exception {
-        byte[] bytes = buf.array();
-        int len = buf.remaining();
-        try {
-            if (headerLen == 0) {
-                headerLen = findHeaderEnd(bytes, 0, len);
-                if (headerLen == 0) {
-                    if (buffer == null) {
-                        buffer = ByteBufferUtil.obtain();
-                    }
-                    int preLen = buffer.position();
-                    buffer.put(bytes, 0, Math.min(len, buffer.remaining()));
-                    headerLen = findHeaderEnd(buffer.array(), preLen - 4, buffer.position());
-                    if (headerLen == 0) {
-                        if (!buffer.hasRemaining()) {
-                            throw new ResponseException(Response.Status.PAYLOAD_TOO_LARGE, "header " + "is" + " " +
-                                "too " + "large");
-                        }
-                        return;
-                    }
-                } else {
-                    if (buffer != null) {
-                        buffer.compact();
-                    }
-                }
-            }
-            if (headerLen > 0 && request == null) {
-                parseHeader(bytes, headerLen);
-            }
-            Response response = serve();
-            if (response == null) {
-                throw new ResponseException(Response.Status.INTERNAL_ERROR, "SERVER INTERNAL " + "ERROR: Serve() " +
-                    "returned a null response.");
-            }
-            response.send(channel, buf);
-//            throw new ClosedChannelException();
-        } catch (ResponseException e) {
-            Response.newFixedLengthResponse(e.getStatus().getDescription()).send(channel, buf);
-            throw e;
+    public void onReceive() throws Exception {
+        byte[] bytes = buffer.array();
+        int len = buffer.remaining();
+        if (headerLen == 0) {
+            int offset = readLen < 4 ? 0 : readLen - 4;
+            headerLen = findHeaderEnd(bytes, offset, len - offset);
+            readLen = len;
+            if (headerLen == 0) return;
         }
+        if (headerLen > 0 && request == null) {
+            try {
+                parseHeader(bytes, headerLen);
+            } catch (ResponseException e) {
+                sendResponse.send(Response.newFixedLengthResponse(e.getStatus().getDescription()));
+            }
+        }
+        buffer.compact();
+        buffer.flip();
+        serve();
     }
 
     private static int findHeaderEnd(final byte[] buf, int offset, int len) {
@@ -140,7 +135,7 @@ public class HttpHandler extends ChannelContext {
                 request.protocolVersion = st.nextToken();
             } else {
                 request.protocolVersion = "HTTP/1.1";
-                log(Level.FINE, "no protocol version specified, strange. Assuming HTTP/1.1.");
+                Log.w("no protocol version specified, strange. Assuming HTTP/1.1.");
             }
             String line = in.readLine();
             while (line != null && !line.trim().isEmpty()) {
@@ -159,7 +154,7 @@ public class HttpHandler extends ChannelContext {
         }
     }
 
-    private static void decodeParams(String params, Map<String, Object> p) {
+    static void decodeParams(String params, Map<String, Object> p) {
         if (params == null) return;
         StringTokenizer st = new StringTokenizer(params, "&");
         while (st.hasMoreTokens()) {
@@ -189,32 +184,21 @@ public class HttpHandler extends ChannelContext {
         }
     }
 
-    private Response serve() {
+    private void serve() {
         Method method = request.getMethod();
-        if (method == Method.GET) {
-            return new HttpServlet().get(request);
+        switch (method) {
+            case GET:
+                HttpDispatch.get(request, sendResponse);
+                break;
+            case PUT:
+            case POST:
+                HttpDispatch.post(request, sendResponse, buffer);
+                break;
+            default:
+                sendResponse.send(Response.newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "Not " +
+                    "Found"));
+                break;
         }
-        if (Method.PUT.equals(method) || Method.POST.equals(method)) {
-            try {
-                return parseBody();
-            } catch (IOException ioe) {
-                return Response.newFixedLengthResponse(Response.Status.INTERNAL_ERROR, "text/plain", "SERVER " +
-                    "INTERNAL ERROR: IOException: " + ioe
-                    .getMessage());
-            } catch (ResponseException re) {
-                return Response.newFixedLengthResponse(Response.Status.lookup(re.getStatus()
-                    .getRequestStatus()), "text/plain", re.getMessage());
-            }
-        }
-        return Response.newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "Not Found");
-    }
-
-    protected Response parseBody() throws IOException, ResponseException {
-        Method method = request.getMethod();
-
-        if (method == Method.POST || method == Method.PUT) {
-        }
-        return new Response(Response.Status.OK, "text/html", null, 0);
     }
 
     @Override

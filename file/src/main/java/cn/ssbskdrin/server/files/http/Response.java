@@ -11,7 +11,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.channels.ByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.text.SimpleDateFormat;
@@ -37,12 +36,8 @@ public class Response implements Closeable {
     public enum Status {
         SWITCH_PROTOCOL(101, "Switching Protocols"),
 
-        OK(200, "OK"),
-        CREATED(201, "Created"),
-        ACCEPTED(202, "Accepted"),
-        NO_CONTENT(204, "No Content"),
-        PARTIAL_CONTENT(206, "Partial Content"),
-        MULTI_STATUS(207, "Multi-Status"),
+        OK(200, "OK"), CREATED(201, "Created"), ACCEPTED(202, "Accepted"), NO_CONTENT(204, "No Content"),
+        PARTIAL_CONTENT(206, "Partial Content"), MULTI_STATUS(207, "Multi-Status"),
 
         REDIRECT(301, "Moved Permanently"),
         /**
@@ -51,32 +46,20 @@ public class Response implements Closeable {
          * RFC2616 to address this. You should prefer 303 and 307 unless the
          * calling user agent does not support 303 and 307 functionality
          */
-        @Deprecated FOUND(302, "Found"),
-        REDIRECT_SEE_OTHER(303, "See Other"),
-        NOT_MODIFIED(304, "Not Modified"),
+        @Deprecated FOUND(302, "Found"), REDIRECT_SEE_OTHER(303, "See Other"), NOT_MODIFIED(304, "Not Modified"),
         TEMPORARY_REDIRECT(307, "Temporary Redirect"),
 
-        BAD_REQUEST(400, "Bad Request"),
-        UNAUTHORIZED(401, "Unauthorized"),
-        FORBIDDEN(403, "Forbidden"),
-        NOT_FOUND(404, "Not Found"),
-        METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
-        NOT_ACCEPTABLE(406, "Not " + "Acceptable"),
-        REQUEST_TIMEOUT(408, "Request Timeout"),
-        CONFLICT(409, "Conflict"),
-        GONE(410, "Gone"),
-        LENGTH_REQUIRED(411, "Length Required"),
-        PRECONDITION_FAILED(412, "Precondition Failed"),
-        PAYLOAD_TOO_LARGE(413, "Payload Too Large"),
-        UNSUPPORTED_MEDIA_TYPE(415, "Unsupported Media Type"),
-        RANGE_NOT_SATISFIABLE(416, "Requested Range Not Satisfiable"),
-        EXPECTATION_FAILED(417, "Expectation " + "Failed"),
-        TOO_MANY_REQUESTS(429, "Too Many Requests"),
+        BAD_REQUEST(400, "Bad Request"), UNAUTHORIZED(401, "Unauthorized"), FORBIDDEN(403, "Forbidden"),
+        NOT_FOUND(404, "Not Found"), METHOD_NOT_ALLOWED(405, "Method Not Allowed"), NOT_ACCEPTABLE(406, "Not " +
+            "Acceptable"), REQUEST_TIMEOUT(408, "Request Timeout"), CONFLICT(409, "Conflict"), GONE(410, "Gone"),
+        LENGTH_REQUIRED(411, "Length Required"), PRECONDITION_FAILED(412, "Precondition Failed"),
+        PAYLOAD_TOO_LARGE(413, "Payload Too Large"), UNSUPPORTED_MEDIA_TYPE(415, "Unsupported Media Type"),
+        RANGE_NOT_SATISFIABLE(416, "Requested Range Not Satisfiable"), EXPECTATION_FAILED(417, "Expectation " +
+            "Failed"), TOO_MANY_REQUESTS(429, "Too Many Requests"),
 
-        INTERNAL_ERROR(500, "Internal Server Error"),
-        NOT_IMPLEMENTED(501, "Not Implemented"),
-        SERVICE_UNAVAILABLE(503, "Service Unavailable"),
-        UNSUPPORTED_HTTP_VERSION(505, "HTTP Version Not " + "Supported");
+        INTERNAL_ERROR(500, "Internal Server Error"), NOT_IMPLEMENTED(501, "Not Implemented"),
+        SERVICE_UNAVAILABLE(503, "Service Unavailable"), UNSUPPORTED_HTTP_VERSION(505, "HTTP Version Not " +
+            "Supported");
 
         private final int requestStatus;
 
@@ -111,9 +94,9 @@ public class Response implements Closeable {
      * OutputStream according to chunked transfer:
      * http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
      */
-    private static class ChunkedOutputStream extends FilterOutputStream {
+    private static class ChunkOutputStream extends FilterOutputStream {
 
-        public ChunkedOutputStream(OutputStream out) {
+        public ChunkOutputStream(OutputStream out) {
             super(out);
         }
 
@@ -177,7 +160,7 @@ public class Response implements Closeable {
      * copy of the header map with all the keys lowercase for faster
      * searching.
      */
-    private final Map<String, String> lowerCaseHeader = new HashMap<String, String>();
+    private final Map<String, String> lowerCaseHeader = new HashMap<>();
 
     /**
      * The request method that spawned this response.
@@ -271,7 +254,7 @@ public class Response implements Closeable {
         this.keepAlive = useKeepAlive;
     }
 
-    protected void send(ByteChannel channel, ByteBuffer buffer) throws IOException {
+    protected void write(ByteBuffer buffer) {
         SimpleDateFormat gmtFrmt = new SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
         gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -279,54 +262,53 @@ public class Response implements Closeable {
             if (this.status == null) {
                 throw new Error("sendResponse(): Status can't be null.");
             }
-            printHeader(channel, buffer, "HTTP/1.1 " + this.status.getDescription() + " ");
+            printHeader(buffer, "HTTP/1.1 " + this.status.getDescription() + " ");
             if (this.mimeType != null) {
-                printHeader(channel, buffer, "Content-Type", this.mimeType);
+                printHeader(buffer, "Content-Type", this.mimeType);
             }
             if (getHeader("date") == null) {
-                printHeader(channel, buffer, "Date", gmtFrmt.format(new Date()));
+                printHeader(buffer, "Date", gmtFrmt.format(new Date()));
             }
             for (Map.Entry<String, String> entry : this.header.entrySet()) {
-                printHeader(channel, buffer, entry.getKey(), entry.getValue());
+                printHeader(buffer, entry.getKey(), entry.getValue());
             }
             if (getHeader("connection") == null) {
-                printHeader(channel, buffer, "Connection", (this.keepAlive ? "keep-alive" : "close"));
+                printHeader(buffer, "Connection", (this.keepAlive ? "keep-alive" : "close"));
             }
             if (getHeader("content-length") != null) {
                 encodeAsGzip = false;
             }
             if (encodeAsGzip) {
-                printHeader(channel, buffer, "Content-Encoding", "gzip");
+                printHeader(buffer, "Content-Encoding", "gzip");
                 setChunkedTransfer(true);
             }
             long pending = this.data != null ? this.contentLength : 0;
             if (this.requestMethod != Method.HEAD && this.chunkedTransfer) {
-                printHeader(channel, buffer, "Transfer-Encoding", "chunked");
+                //                printHeader(channel, buffer, "Transfer-Encoding", "chunked");
             } else if (!encodeAsGzip) {
-                //                pending = sendContentLengthHeaderIfNotAlreadyPresent(pw, pending);
+                pending = sendContentLengthHeaderIfNotAlreadyPresent(buffer, pending);
             }
+            printHeader(buffer, "");
+            while (data.available() > 0) {
+                int len = data.read(buffer.array(), buffer.position(), buffer.remaining());
+                buffer.position(buffer.position() + len);
+            }
+            printHeader(buffer, "");
             //            pw.append("\r\n");
             //            pw.flush();
-            //            sendBodyWithCorrectTransferAndEncoding(outputStream, pending);
+            //                        sendBodyWithCorrectTransferAndEncoding(outputStream, pending);
             //            outputStream.flush();
-            printHeader(channel, buffer, "");
         } catch (IOException ioe) {
             NanoHTTPD.LOG.log(Level.SEVERE, "Could not send response to the client", ioe);
         }
     }
 
-    private static void printHeader(ByteChannel channel, ByteBuffer buffer, String value) throws IOException {
-        buffer.clear();
+    private static void printHeader(ByteBuffer buffer, String value) {
         buffer.put((value + END).getBytes());
-        buffer.flip();
-        channel.write(buffer);
     }
 
-    private static void printHeader(ByteChannel channel, ByteBuffer buffer, String key, String value) throws IOException {
-        buffer.clear();
+    private static void printHeader(ByteBuffer buffer, String key, String value) {
         buffer.put((key + ": " + value + END).getBytes());
-        buffer.flip();
-        channel.write(buffer);
     }
 
     /**
@@ -383,6 +365,20 @@ public class Response implements Closeable {
         pw.append(key).append(": ").append(value).append("\r\n");
     }
 
+    protected long sendContentLengthHeaderIfNotAlreadyPresent(ByteBuffer pw, long defaultSize) {
+        String contentLengthString = getHeader("content-length");
+        long size = defaultSize;
+        if (contentLengthString != null) {
+            try {
+                size = Long.parseLong(contentLengthString);
+            } catch (NumberFormatException ex) {
+                NanoHTTPD.LOG.severe("content-length was no number " + contentLengthString);
+            }
+        }
+        printHeader(pw, "Content-Length", size + "");
+        return size;
+    }
+
     protected long sendContentLengthHeaderIfNotAlreadyPresent(PrintWriter pw, long defaultSize) {
         String contentLengthString = getHeader("content-length");
         long size = defaultSize;
@@ -399,9 +395,9 @@ public class Response implements Closeable {
 
     private void sendBodyWithCorrectTransferAndEncoding(OutputStream outputStream, long pending) throws IOException {
         if (this.requestMethod != Method.HEAD && this.chunkedTransfer) {
-            ChunkedOutputStream chunkedOutputStream = new ChunkedOutputStream(outputStream);
-            sendBodyWithCorrectEncoding(chunkedOutputStream, -1);
-            chunkedOutputStream.finish();
+            ChunkOutputStream chunkOutputStream = new ChunkOutputStream(outputStream);
+            sendBodyWithCorrectEncoding(chunkOutputStream, -1);
+            chunkOutputStream.finish();
         } else {
             sendBodyWithCorrectEncoding(outputStream, pending);
         }
@@ -463,7 +459,6 @@ public class Response implements Closeable {
     public void setStatus(Status status) {
         this.status = status;
     }
-
 
     /**
      * Create a response with unknown length (using HTTP 1.1 chunking).

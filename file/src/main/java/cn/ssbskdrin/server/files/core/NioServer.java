@@ -1,4 +1,4 @@
-package cn.ssbskdrin.server.files;
+package cn.ssbskdrin.server.files.core;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,6 +12,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 
+import cn.ssbskdrin.server.files.Log;
 import cn.ssbskdrin.server.files.http.HttpHandler;
 
 /**
@@ -19,7 +20,7 @@ import cn.ssbskdrin.server.files.http.HttpHandler;
  *
  * @author sskbskdrin
  */
-public class NioServer implements Log {
+public class NioServer {
     public static void main(String[] args) {
         bind(8080).channelContextProvider(HttpHandler::new).build().start();
     }
@@ -56,7 +57,7 @@ public class NioServer implements Log {
             }
             try {
                 if (selector.select(2000) == 0) {
-                    log("wait==");
+                    Log.d("wait==");
                     continue;
                 }
                 Iterator<SelectionKey> it = selector.selectedKeys().iterator();
@@ -67,25 +68,19 @@ public class NioServer implements Log {
                         ServerSocketChannel channel = (ServerSocketChannel) key.channel();
                         SocketChannel socketChannel = channel.accept();
                         socketChannel.configureBlocking(false);
-                        ChannelContext context = channelContextProvider.getChannelContext(socketChannel);
-                        context.setServer(this);
-                        queue.offer(context);
-                        socketChannel.register(key.selector(), SelectionKey.OP_READ, context);
+                        ChannelContext context = channelContextProvider.getChannelContext();
+                        context.setKey(socketChannel.register(key.selector(), SelectionKey.OP_READ, context));
                     } else if (key.isReadable()) {
-                        ChannelContext channelContext = (ChannelContext) key.attachment();
-                        if (channelContext.tryRead()) {
-                            executor.execute(channelContext);
-                        }
+                        ChannelContext context = (ChannelContext) key.attachment();
+                        context.read();
+                    } else if (key.isWritable()) {
+                        ChannelContext context = (ChannelContext) key.attachment();
+                        context.write();
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-        while (!queue.isEmpty()) {
-            ChannelContext context = queue.poll();
-            context.onException(new InterruptedException());
-            context.onClose();
         }
     }
 
@@ -94,7 +89,7 @@ public class NioServer implements Log {
     }
 
     public interface ChannelContextProvider {
-        ChannelContext getChannelContext(SocketChannel channel);
+        ChannelContext getChannelContext();
     }
 
     public static Builder bind(int port) {
