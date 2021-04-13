@@ -1,14 +1,12 @@
 package cn.ssbskdrin.server.files.http;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -28,7 +26,14 @@ import cn.ssbskdrin.server.files.NanoHTTPD;
  * HTTP response
  */
 public class Response implements Closeable {
-    private static final String END = "\r\n";
+    private static final byte[] END = "\r\n".getBytes();
+
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String DATE = "Date";
+    private static final String CONNECTION = "Connection";
+    private static final String CONTENT_ENCODING = "Content-Encoding";
+    private static final String TRANSFER_ENCODING = "Transfer-Encoding";
+    private static final String CONTENT_LENGTH = "Content-Length";
 
     /**
      * Some HTTP response status codes
@@ -146,21 +151,7 @@ public class Response implements Closeable {
      * Headers for the HTTP response. Use addHeader() to add lines. the
      * lowercase map is automatically kept up to date.
      */
-    @SuppressWarnings("serial")
-    private final Map<String, String> header = new HashMap<String, String>() {
-
-        @Override
-        public String put(String key, String value) {
-            lowerCaseHeader.put(key == null ? key : key.toLowerCase(), value);
-            return super.put(key, value);
-        }
-    };
-
-    /**
-     * copy of the header map with all the keys lowercase for faster
-     * searching.
-     */
-    private final Map<String, String> lowerCaseHeader = new HashMap<>();
+    private Map<String, String> header;
 
     /**
      * The request method that spawned this response.
@@ -168,29 +159,17 @@ public class Response implements Closeable {
     private Method requestMethod;
 
     /**
-     * Use chunkedTransfer
-     */
-    private boolean chunkedTransfer;
-
-    private boolean encodeAsGzip;
-
-    private boolean keepAlive;
-
-    /**
      * Creates a fixed length response if totalBytes>=0, otherwise chunked.
      */
-    protected Response(Status status, String mimeType, InputStream data, long totalBytes) {
-        this.status = status;
-        this.mimeType = mimeType;
-        if (data == null) {
-            this.data = new ByteArrayInputStream(new byte[0]);
-            this.contentLength = 0L;
-        } else {
-            this.data = data;
-            this.contentLength = totalBytes;
+    private Response(Builder builder) {
+        this.status = builder.status;
+        this.header = builder.header;
+        if (builder.data == null) {
+            builder.data = new ByteArrayInputStream(new byte[0]);
+            builder.header(CONTENT_LENGTH, "0");
         }
-        this.chunkedTransfer = this.contentLength < 0;
-        keepAlive = true;
+        this.data = builder.data;
+        this.requestMethod = builder.requestMethod;
     }
 
     @Override
@@ -200,42 +179,8 @@ public class Response implements Closeable {
         }
     }
 
-    /**
-     * Adds given line to the header.
-     */
-    public void addHeader(String name, String value) {
-        this.header.put(name, value);
-    }
-
-    /**
-     * Indicate to close the connection after the Response has been sent.
-     *
-     * @param close {@code true} to hint connection closing, {@code false} to
-     *              let connection be closed by client.
-     */
-    public void closeConnection(boolean close) {
-        if (close) this.header.put("connection", "close");
-        else this.header.remove("connection");
-    }
-
-    /**
-     * @return {@code true} if connection is to be closed after this
-     * Response has been sent.
-     */
-    public boolean isCloseConnection() {
-        return "close".equals(getHeader("connection"));
-    }
-
-    public InputStream getData() {
-        return this.data;
-    }
-
     public String getHeader(String name) {
-        return this.lowerCaseHeader.get(name.toLowerCase());
-    }
-
-    public String getMimeType() {
-        return this.mimeType;
+        return this.header.get(name);
     }
 
     public Method getRequestMethod() {
@@ -246,239 +191,109 @@ public class Response implements Closeable {
         return this.status;
     }
 
-    public void setGzipEncoding(boolean encodeAsGzip) {
-        this.encodeAsGzip = encodeAsGzip;
-    }
+    private boolean hasRemaining;
+    private boolean firstWrite = true;
 
-    public void setKeepAlive(boolean useKeepAlive) {
-        this.keepAlive = useKeepAlive;
+    boolean hasRemaining() {
+        return hasRemaining;
     }
 
     protected void write(ByteBuffer buffer) {
-        SimpleDateFormat gmtFrmt = new SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
-        gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-        try {
+        if (firstWrite) {
+            if (getHeader(DATE) == null) {
+                SimpleDateFormat gmtFrmt = new SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+                gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
+                header.put(DATE, gmtFrmt.format(new Date()));
+            }
+            String contentEncoding = getHeader(CONTENT_ENCODING);
+            if (contentEncoding != null && contentEncoding.contains("gzip")) {
+                header.put(TRANSFER_ENCODING, "chunked");
+            }
+            if ("chunked".equals(getHeader(TRANSFER_ENCODING))) {
+                this.header.remove(CONTENT_LENGTH);
+            }
             if (this.status == null) {
                 throw new Error("sendResponse(): Status can't be null.");
             }
             printHeader(buffer, "HTTP/1.1 " + this.status.getDescription() + " ");
-            if (this.mimeType != null) {
-                printHeader(buffer, "Content-Type", this.mimeType);
-            }
-            if (getHeader("date") == null) {
-                printHeader(buffer, "Date", gmtFrmt.format(new Date()));
-            }
             for (Map.Entry<String, String> entry : this.header.entrySet()) {
                 printHeader(buffer, entry.getKey(), entry.getValue());
             }
-            if (getHeader("connection") == null) {
-                printHeader(buffer, "Connection", (this.keepAlive ? "keep-alive" : "close"));
-            }
-            if (getHeader("content-length") != null) {
-                encodeAsGzip = false;
-            }
-            if (encodeAsGzip) {
-                printHeader(buffer, "Content-Encoding", "gzip");
-                setChunkedTransfer(true);
-            }
-            long pending = this.data != null ? this.contentLength : 0;
-            if (this.requestMethod != Method.HEAD && this.chunkedTransfer) {
-                //                printHeader(channel, buffer, "Transfer-Encoding", "chunked");
-            } else if (!encodeAsGzip) {
-                pending = sendContentLengthHeaderIfNotAlreadyPresent(buffer, pending);
-            }
             printHeader(buffer, "");
-            while (data.available() > 0) {
-                int len = data.read(buffer.array(), buffer.position(), buffer.remaining());
-                buffer.position(buffer.position() + len);
+            firstWrite = false;
+        }
+        try {
+            //
+            //            long pending = this.data != null ? this.contentLength : 0;
+            //            if (this.requestMethod != Method.HEAD && this.header.containsKey(TRANSFER_ENCODING)) {
+            //                //                printHeader(channel, buffer, "Transfer-Encoding", "chunked");
+            //            } else if (!encodeAsGzip) {
+            //                pending = sendContentLengthHeaderIfNotAlreadyPresent(buffer, pending);
+            //            }
+            boolean gzip = "gzip".equals(getHeader(CONTENT_ENCODING));
+            boolean chunk = "chunked".equals(getHeader(TRANSFER_ENCODING));
+            byte[] cache = new byte[Math.min(buffer.remaining() * 2 / 3, data.available())];
+            if (data.available() > 0) {
+                int len = data.read(cache);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(len + 20);
+                OutputStream os = bos;
+                if (chunk) {
+                    os = new ChunkOutputStream(os);
+                }
+                if (gzip) {
+                    os = new GZIPOutputStream(os);
+                }
+                os.write(cache, 0, len);
+                if (os instanceof GZIPOutputStream) {
+                    ((GZIPOutputStream) os).finish();
+                }
+                buffer.put(bos.toByteArray());
             }
-            printHeader(buffer, "");
-            //            pw.append("\r\n");
-            //            pw.flush();
-            //                        sendBodyWithCorrectTransferAndEncoding(outputStream, pending);
-            //            outputStream.flush();
+            if (data.available() <= 0) {
+                if (chunk) {
+                    if (buffer.remaining() > 4) {
+                        buffer.put("0\r\n\r\n".getBytes());
+                        hasRemaining = false;
+                    } else {
+                        hasRemaining = true;
+                    }
+                } else {
+                    buffer.put(END);
+                    hasRemaining = false;
+                }
+            } else {
+                hasRemaining = true;
+            }
         } catch (IOException ioe) {
             NanoHTTPD.LOG.log(Level.SEVERE, "Could not send response to the client", ioe);
         }
     }
 
     private static void printHeader(ByteBuffer buffer, String value) {
-        buffer.put((value + END).getBytes());
+        buffer.put(value.getBytes());
+        buffer.put(END);
     }
 
     private static void printHeader(ByteBuffer buffer, String key, String value) {
-        buffer.put((key + ": " + value + END).getBytes());
-    }
-
-    /**
-     * Sends given response to the socket.
-     */
-    protected void send(OutputStream outputStream) {
-        SimpleDateFormat gmtFrmt = new SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
-        gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-        try {
-            if (this.status == null) {
-                throw new Error("sendResponse(): Status can't be null.");
-            }
-            PrintWriter pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream,
-                new ContentType(this.mimeType)
-                .getEncoding())), false);
-            pw.append("HTTP/1.1 ").append(this.status.getDescription()).append(" \r\n");
-            if (this.mimeType != null) {
-                printHeader(pw, "Content-Type", this.mimeType);
-            }
-            if (getHeader("date") == null) {
-                printHeader(pw, "Date", gmtFrmt.format(new Date()));
-            }
-            for (Map.Entry<String, String> entry : this.header.entrySet()) {
-                printHeader(pw, entry.getKey(), entry.getValue());
-            }
-            if (getHeader("connection") == null) {
-                printHeader(pw, "Connection", (this.keepAlive ? "keep-alive" : "close"));
-            }
-            if (getHeader("content-length") != null) {
-                encodeAsGzip = false;
-            }
-            if (encodeAsGzip) {
-                printHeader(pw, "Content-Encoding", "gzip");
-                setChunkedTransfer(true);
-            }
-            long pending = this.data != null ? this.contentLength : 0;
-            if (this.requestMethod != Method.HEAD && this.chunkedTransfer) {
-                printHeader(pw, "Transfer-Encoding", "chunked");
-            } else if (!encodeAsGzip) {
-                pending = sendContentLengthHeaderIfNotAlreadyPresent(pw, pending);
-            }
-            pw.append("\r\n");
-            pw.flush();
-            sendBodyWithCorrectTransferAndEncoding(outputStream, pending);
-            outputStream.flush();
-        } catch (IOException ioe) {
-            NanoHTTPD.LOG.log(Level.SEVERE, "Could not send response to the client", ioe);
-        }
-    }
-
-    @SuppressWarnings("static-method")
-    protected void printHeader(PrintWriter pw, String key, String value) {
-        pw.append(key).append(": ").append(value).append("\r\n");
-    }
-
-    protected long sendContentLengthHeaderIfNotAlreadyPresent(ByteBuffer pw, long defaultSize) {
-        String contentLengthString = getHeader("content-length");
-        long size = defaultSize;
-        if (contentLengthString != null) {
-            try {
-                size = Long.parseLong(contentLengthString);
-            } catch (NumberFormatException ex) {
-                NanoHTTPD.LOG.severe("content-length was no number " + contentLengthString);
-            }
-        }
-        printHeader(pw, "Content-Length", size + "");
-        return size;
-    }
-
-    protected long sendContentLengthHeaderIfNotAlreadyPresent(PrintWriter pw, long defaultSize) {
-        String contentLengthString = getHeader("content-length");
-        long size = defaultSize;
-        if (contentLengthString != null) {
-            try {
-                size = Long.parseLong(contentLengthString);
-            } catch (NumberFormatException ex) {
-                NanoHTTPD.LOG.severe("content-length was no number " + contentLengthString);
-            }
-        }
-        pw.print("Content-Length: " + size + "\r\n");
-        return size;
-    }
-
-    private void sendBodyWithCorrectTransferAndEncoding(OutputStream outputStream, long pending) throws IOException {
-        if (this.requestMethod != Method.HEAD && this.chunkedTransfer) {
-            ChunkOutputStream chunkOutputStream = new ChunkOutputStream(outputStream);
-            sendBodyWithCorrectEncoding(chunkOutputStream, -1);
-            chunkOutputStream.finish();
-        } else {
-            sendBodyWithCorrectEncoding(outputStream, pending);
-        }
-    }
-
-    private void sendBodyWithCorrectEncoding(OutputStream outputStream, long pending) throws IOException {
-        if (encodeAsGzip) {
-            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
-            sendBody(gzipOutputStream, -1);
-            gzipOutputStream.finish();
-        } else {
-            sendBody(outputStream, pending);
-        }
-    }
-
-    /**
-     * Sends the body to the specified OutputStream. The pending parameter
-     * limits the maximum amounts of bytes sent unless it is -1, in which
-     * case everything is sent.
-     *
-     * @param outputStream the OutputStream to send data to
-     * @param pending      -1 to send everything, otherwise sets a max limit to the
-     *                     number of bytes sent
-     * @throws IOException if something goes wrong while sending the data.
-     */
-    private void sendBody(OutputStream outputStream, long pending) throws IOException {
-        long BUFFER_SIZE = 16 * 1024;
-        byte[] buff = new byte[(int) BUFFER_SIZE];
-        boolean sendEverything = pending == -1;
-        while (pending > 0 || sendEverything) {
-            long bytesToRead = sendEverything ? BUFFER_SIZE : Math.min(pending, BUFFER_SIZE);
-            int read = this.data.read(buff, 0, (int) bytesToRead);
-            if (read <= 0) {
-                break;
-            }
-            outputStream.write(buff, 0, read);
-            if (!sendEverything) {
-                pending -= read;
-            }
-        }
-    }
-
-    public void setChunkedTransfer(boolean chunkedTransfer) {
-        this.chunkedTransfer = chunkedTransfer;
-    }
-
-    public void setData(InputStream data) {
-        this.data = data;
-    }
-
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-    }
-
-    public void setRequestMethod(Method requestMethod) {
-        this.requestMethod = requestMethod;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    /**
-     * Create a response with unknown length (using HTTP 1.1 chunking).
-     */
-    public static Response newChunkedResponse(Response.Status status, String mimeType, InputStream data) {
-        return new Response(status, mimeType, data, -1);
+        buffer.put(key.getBytes());
+        buffer.put((byte) ':');
+        buffer.put((byte) ' ');
+        buffer.put(value.getBytes());
+        buffer.put(END);
     }
 
     /**
      * Create a response with known length.
      */
-    public static Response newFixedLengthResponse(Response.Status status, String mimeType, InputStream data,
-                                                  long totalBytes) {
-        return new Response(status, mimeType, data, totalBytes);
+    private static Response newFixedLengthResponse(Response.Status status, String mimeType, InputStream data,
+                                                   long totalBytes) {
+        return Response.with(status).contentType(mimeType).body(data).contentLength(totalBytes).build();
     }
 
     /**
      * Create a text response with known length.
      */
-    public static Response newFixedLengthResponse(Response.Status status, String mimeType, String txt) {
+    private static Response newFixedLengthResponse(Response.Status status, String mimeType, String txt) {
         ContentType contentType = new ContentType(mimeType);
         if (txt == null) {
             return newFixedLengthResponse(status, mimeType, new ByteArrayInputStream(new byte[0]), 0);
@@ -503,7 +318,113 @@ public class Response implements Closeable {
      * Create a text response with known length.
      */
     public static Response newFixedLengthResponse(String msg) {
-        return newFixedLengthResponse(Response.Status.OK, NanoHTTPD.MIME_HTML, msg);
+        return with(Response.Status.OK).contentType(NanoHTTPD.MIME_PLAINTEXT).body(msg).build();
+    }
+
+    public static Builder with(Status status) {
+        return new Builder(status);
+    }
+
+    public static class Builder {
+
+        /**
+         * HTTP status code after processing, e.g. "200 OK", Status.OK
+         */
+        private final Status status;
+
+        /**
+         * Data of the response, may be null.
+         */
+        private InputStream data;
+
+        /**
+         * Headers for the HTTP response. Use addHeader() to add lines. the
+         * lowercase map is automatically kept up to date.
+         */
+        private final Map<String, String> header = new HashMap<>();
+
+        /**
+         * The request method that spawned this response.
+         */
+        private Method requestMethod;
+
+        private Builder(Status status) {
+            this.status = status;
+            contentType("text/plain");
+            keepAlive(true);
+        }
+
+        public Builder contentType(String mimeType) {
+            return header(CONTENT_TYPE, mimeType);
+        }
+
+        public Builder contentLength(long len) {
+            return header(CONTENT_LENGTH, String.valueOf(len));
+        }
+
+        public Builder enableGzip(boolean enable) {
+            return header(CONTENT_ENCODING, enable ? "gzip" : null);
+        }
+
+        public Builder enableTransfer(boolean enable) {
+            return header(TRANSFER_ENCODING, enable ? "chunked" : null);
+        }
+
+        public Builder requestMethod(Method method) {
+            this.requestMethod = method;
+            return this;
+        }
+
+        public Builder keepAlive(boolean keep) {
+            return header(CONNECTION, keep ? "Keep-Alive" : null);
+        }
+
+        public Builder closeConnection(boolean close) {
+            return header(CONNECTION, close ? "close" : null);
+        }
+
+        public Builder header(String key, String value) {
+            if (key == null || key.length() == 0 || value == null || value.length() == 0) {
+                header.remove(CONTENT_TYPE);
+            } else {
+                header.put(key, value);
+            }
+            return this;
+        }
+
+        public Builder body(String body) {
+            byte[] bytes;
+            if (body == null) {
+                bytes = new byte[0];
+            } else {
+                try {
+                    ContentType contentType = new ContentType(header.get(CONTENT_TYPE));
+                    CharsetEncoder newEncoder = Charset.forName(contentType.getEncoding()).newEncoder();
+                    if (!newEncoder.canEncode(body)) {
+                        contentType = contentType.tryUTF8();
+                    }
+                    bytes = body.getBytes(contentType.getEncoding());
+                } catch (UnsupportedEncodingException e) {
+                    NanoHTTPD.LOG.log(Level.SEVERE, "encoding problem, responding nothing", e);
+                    bytes = new byte[0];
+                }
+            }
+            return body(new ByteArrayInputStream(bytes));
+        }
+
+        public Builder body(InputStream is) {
+            try {
+                contentLength(is.available());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            data = is;
+            return this;
+        }
+
+        public Response build() {
+            return new Response(this);
+        }
     }
 
 }

@@ -2,9 +2,12 @@ package cn.ssbskdrin.server.files.http;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
@@ -12,9 +15,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 
 import cn.ssbskdrin.server.files.ByteBufferUtil;
 import cn.ssbskdrin.server.files.Log;
+import cn.ssbskdrin.server.files.NanoHTTPD;
 import cn.ssbskdrin.server.files.core.ChannelContext;
 
 /**
@@ -25,35 +30,24 @@ import cn.ssbskdrin.server.files.core.ChannelContext;
 public class HttpHandler extends ChannelContext {
     private int readLen;
     private int headerLen = 0;
-    Request request;
+    private Request request;
 
-    Response response;
-    SendResponse sendResponse = new SendResponse() {
-        @Override
-        public void send(Response rsp) {
-            response = rsp;
-            try {
-                buffer.clear();
-                response.write(buffer);
-                buffer.flip();
-                switchMode(false);
-            } catch (ClosedChannelException e) {
-                onException(e);
-            }
-        }
-    };
+    private Response response;
+    private HttpServlet servlet;
 
     @Override
     protected boolean isWriteComplete() {
-        buffer.compact();
-        buffer.flip();
-        return super.isWriteComplete();
+        if (response.hasRemaining() || buffer(true).hasRemaining()) {
+            response.write(buffer(false));
+            return false;
+        }
+        return true;
     }
 
     @Override
     public void onReceive() throws Exception {
-        byte[] bytes = buffer.array();
-        int len = buffer.remaining();
+        byte[] bytes = buffer(true).array();
+        int len = buffer(true).remaining();
         if (headerLen == 0) {
             int offset = readLen < 4 ? 0 : readLen - 4;
             headerLen = findHeaderEnd(bytes, offset, len - offset);
@@ -63,12 +57,14 @@ public class HttpHandler extends ChannelContext {
         if (headerLen > 0 && request == null) {
             try {
                 parseHeader(bytes, headerLen);
+                buffer(true).position(headerLen);
             } catch (ResponseException e) {
-                sendResponse.send(Response.newFixedLengthResponse(e.getStatus().getDescription()));
+                response = Response.newFixedLengthResponse(e.getStatus().getDescription());
+                sendResponse();
+                return;
             }
         }
-        buffer.compact();
-        buffer.flip();
+        buffer(true);
         serve();
     }
 
@@ -93,6 +89,9 @@ public class HttpHandler extends ChannelContext {
     private void parseHeader(byte[] bytes, int len) throws ResponseException {
         request = new Request();
         try {
+            if (Log.isLoggerAble(Log.INFO)) {
+                Log.i(new String(bytes, 0, len));
+            }
             // Read the request line
             BufferedReader in = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes, 0, len)));
             String inLine = in.readLine();
@@ -185,26 +184,53 @@ public class HttpHandler extends ChannelContext {
     }
 
     private void serve() {
+        if (servlet == null) {
+            servlet = HttpDispatch.get(request);
+        }
         Method method = request.getMethod();
         switch (method) {
             case GET:
-                HttpDispatch.get(request, sendResponse);
+                response = servlet.get(request);
                 break;
             case PUT:
             case POST:
-                HttpDispatch.post(request, sendResponse, buffer);
+                response = servlet.post(request, buffer(true));
                 break;
             default:
-                sendResponse.send(Response.newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "Not " +
-                    "Found"));
+                response = Response.with(Response.Status.NOT_FOUND).contentType("text/plain").body("Not Found").build();
                 break;
         }
+        sendResponse();
+    }
+
+    private void sendResponse() {
+        if (response != null) {
+            try {
+                clearBuffer();
+                response.write(buffer(false));
+                switchMode(false);
+            } catch (ClosedChannelException e) {
+                onException(e);
+            }
+        }
+    }
+
+    @Override
+    protected void onWriteComplete() {
+        readLen = 0;
+        headerLen = 0;
+        request = null;
+
+        safeClose(response);
+        response = null;
+        safeClose(servlet);
+        servlet = null;
     }
 
     @Override
     protected void onClose() {
         super.onClose();
-        ByteBufferUtil.recycle(buffer);
+        ByteBufferUtil.recycle(buffer(true));
     }
 
     private static String decodePercent(String str) {
@@ -217,5 +243,22 @@ public class HttpHandler extends ChannelContext {
         return decoded;
     }
 
+    private static void safeClose(Object closeable) {
+        try {
+            if (closeable == null) {
+
+            } else if (closeable instanceof Closeable) {
+                ((Closeable) closeable).close();
+            } else if (closeable instanceof Socket) {
+                ((Socket) closeable).close();
+            } else if (closeable instanceof ServerSocket) {
+                ((ServerSocket) closeable).close();
+            } else {
+                throw new IllegalArgumentException("Unknown object to close");
+            }
+        } catch (IOException e) {
+            NanoHTTPD.LOG.log(Level.SEVERE, "Could not close", e);
+        }
+    }
 
 }

@@ -22,7 +22,14 @@ import cn.ssbskdrin.server.files.http.HttpHandler;
  */
 public class NioServer {
     public static void main(String[] args) {
-        bind(8080).channelContextProvider(HttpHandler::new).build().start();
+        final Thread thread = new Thread(() -> bind(8080).channelContextProvider(HttpHandler::new).build().start());
+        thread.start();
+        try {
+            Thread.sleep(24 * 2600 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            thread.interrupt();
+        }
     }
 
     private final ChannelContextProvider channelContextProvider;
@@ -73,7 +80,7 @@ public class NioServer {
                     } else if (key.isReadable()) {
                         ChannelContext context = (ChannelContext) key.attachment();
                         context.read();
-                    } else if (key.isWritable()) {
+                    } else if (key.isValid() && key.isWritable()) {
                         ChannelContext context = (ChannelContext) key.attachment();
                         context.write();
                     }

@@ -11,11 +11,22 @@ import cn.sskbskdrin.log.console.ConsolePrinter;
 public class Log {
     private static final String TAG = "Log";
 
+    public static final int VERBOSE = 2;
+    public static final int DEBUG = 3;
+    public static final int INFO = 4;
+    public static final int WARN = 5;
+    public static final int ERROR = 6;
+    public static final int ASSERT = 7;
+
     public static SSKLog log = new SSKLog();
 
     static {
         log.addPinter(new ConsolePrinter());
         log.enableJsonOrXml(false, false);
+    }
+
+    public static boolean isLoggerAble(int level) {
+        return level > VERBOSE;
     }
 
     public static void v(String msg) {
