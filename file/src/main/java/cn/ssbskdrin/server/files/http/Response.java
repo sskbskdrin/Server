@@ -124,10 +124,6 @@ public class Response implements Closeable {
             out.write("\r\n".getBytes());
         }
 
-        public void finish() throws IOException {
-            out.write("0\r\n\r\n".getBytes());
-        }
-
     }
 
     /**

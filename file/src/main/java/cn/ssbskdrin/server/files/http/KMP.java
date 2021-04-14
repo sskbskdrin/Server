@@ -5,7 +5,10 @@ package cn.ssbskdrin.server.files.http;
  *
  * @author sskbskdrin
  */
-class KMP {
+public class KMP {
+
+    public static final KMP END = new KMP("\r\n".getBytes());
+    public static final KMP TWO_END = new KMP("\r\n\r\n".getBytes());
 
     private final int[] next;
     private final byte[] dest;
@@ -15,7 +18,11 @@ class KMP {
         next = kmpNext(dest);
     }
 
-    public int find(byte[] src) {
+    public int destLength() {
+        return dest.length;
+    }
+
+    public int find(byte[] src, int offset, int len) {
         if (dest == null || dest.length == 0) return 0;
         if (src.length < dest.length) return -1;
         if (dest.length == 1) {
@@ -24,9 +31,9 @@ class KMP {
             }
             return -1;
         }
-        int i = 0;
+        int i = offset;
         int j = 0;
-        while (i < src.length) {
+        while (i < offset + len) {
             if (j < 0 || src[i] == dest[j]) {
                 ++i;
                 ++j;
@@ -37,6 +44,32 @@ class KMP {
         }
         if (j == dest.length) {
             return i - j;
+        }
+        return -1;
+    }
+
+    private int pos = 0;
+    private int modPos = 0;
+
+    public void reset() {
+        pos = 0;
+        modPos = 0;
+    }
+
+    public int input(byte b) {
+        if (dest == null || dest.length == 0) return 0;
+        while (modPos < dest.length) {
+            if (modPos < 0 || b == dest[modPos]) {
+                ++pos;
+                ++modPos;
+                break;
+            } else {
+                modPos = next[modPos];
+            }
+        }
+        if (modPos == dest.length) {
+            modPos = 0;
+            return pos - dest.length;
         }
         return -1;
     }
@@ -70,7 +103,7 @@ class KMP {
 
     private static int[] kmpNext(byte[] src) {
         if (src == null || src.length == 0) return null;
-        if (src.length == 1) return new int[-1];
+        if (src.length == 1) return new int[]{-1};
         int[] next = new int[src.length];
         next[0] = -1;
         next[1] = 0;

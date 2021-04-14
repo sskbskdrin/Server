@@ -76,6 +76,8 @@ public abstract class ChannelContext {
         }
     }
 
+    int countR = 0;
+
     void read() {
         //        Log.d("read " + id + " " + countR++);
         try {

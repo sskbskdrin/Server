@@ -13,12 +13,26 @@ public class Request {
         return Method.lookup(header.get("method"));
     }
 
+    private long contentLength = -1;
+
     public long getContentLength() {
-        if (header.containsKey("content-length")) {
-            return Long.parseLong(header.get("content-length"));
-            //            } else if (this.splitbyte < this.rlen) {
-            //                return this.rlen - this.splitbyte;
+        if (contentLength < 0) {
+            String len = header.get("content-length");
+            try {
+                contentLength = Long.parseLong(len == null ? "0" : len);
+            } catch (NumberFormatException ignored) {
+            }
+            contentLength = 0;
         }
-        return 0;
+        return contentLength;
+    }
+
+    private ContentType contentType;
+
+    public ContentType getContentType() {
+        if (contentType == null) {
+            contentType = new ContentType(header.get("content-type"));
+        }
+        return contentType;
     }
 }
