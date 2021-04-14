@@ -17,10 +17,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.logging.Level;
 import java.util.zip.GZIPOutputStream;
 
-import cn.ssbskdrin.server.files.NanoHTTPD;
+import cn.ssbskdrin.server.files.util.Log;
 
 /**
  * HTTP response
@@ -41,8 +40,12 @@ public class Response implements Closeable {
     public enum Status {
         SWITCH_PROTOCOL(101, "Switching Protocols"),
 
-        OK(200, "OK"), CREATED(201, "Created"), ACCEPTED(202, "Accepted"), NO_CONTENT(204, "No Content"),
-        PARTIAL_CONTENT(206, "Partial Content"), MULTI_STATUS(207, "Multi-Status"),
+        OK(200, "OK"),
+        CREATED(201, "Created"),
+        ACCEPTED(202, "Accepted"),
+        NO_CONTENT(204, "No Content"),
+        PARTIAL_CONTENT(206, "Partial Content"),
+        MULTI_STATUS(207, "Multi-Status"),
 
         REDIRECT(301, "Moved Permanently"),
         /**
@@ -51,20 +54,32 @@ public class Response implements Closeable {
          * RFC2616 to address this. You should prefer 303 and 307 unless the
          * calling user agent does not support 303 and 307 functionality
          */
-        @Deprecated FOUND(302, "Found"), REDIRECT_SEE_OTHER(303, "See Other"), NOT_MODIFIED(304, "Not Modified"),
+        @Deprecated FOUND(302, "Found"),
+        REDIRECT_SEE_OTHER(303, "See Other"),
+        NOT_MODIFIED(304, "Not Modified"),
         TEMPORARY_REDIRECT(307, "Temporary Redirect"),
 
-        BAD_REQUEST(400, "Bad Request"), UNAUTHORIZED(401, "Unauthorized"), FORBIDDEN(403, "Forbidden"),
-        NOT_FOUND(404, "Not Found"), METHOD_NOT_ALLOWED(405, "Method Not Allowed"), NOT_ACCEPTABLE(406, "Not " +
-            "Acceptable"), REQUEST_TIMEOUT(408, "Request Timeout"), CONFLICT(409, "Conflict"), GONE(410, "Gone"),
-        LENGTH_REQUIRED(411, "Length Required"), PRECONDITION_FAILED(412, "Precondition Failed"),
-        PAYLOAD_TOO_LARGE(413, "Payload Too Large"), UNSUPPORTED_MEDIA_TYPE(415, "Unsupported Media Type"),
-        RANGE_NOT_SATISFIABLE(416, "Requested Range Not Satisfiable"), EXPECTATION_FAILED(417, "Expectation " +
-            "Failed"), TOO_MANY_REQUESTS(429, "Too Many Requests"),
+        BAD_REQUEST(400, "Bad Request"),
+        UNAUTHORIZED(401, "Unauthorized"),
+        FORBIDDEN(403, "Forbidden"),
+        NOT_FOUND(404, "Not Found"),
+        METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
+        NOT_ACCEPTABLE(406, "Not " + "Acceptable"),
+        REQUEST_TIMEOUT(408, "Request Timeout"),
+        CONFLICT(409, "Conflict"),
+        GONE(410, "Gone"),
+        LENGTH_REQUIRED(411, "Length Required"),
+        PRECONDITION_FAILED(412, "Precondition Failed"),
+        PAYLOAD_TOO_LARGE(413, "Payload Too Large"),
+        UNSUPPORTED_MEDIA_TYPE(415, "Unsupported Media Type"),
+        RANGE_NOT_SATISFIABLE(416, "Requested Range Not Satisfiable"),
+        EXPECTATION_FAILED(417, "Expectation " + "Failed"),
+        TOO_MANY_REQUESTS(429, "Too Many Requests"),
 
-        INTERNAL_ERROR(500, "Internal Server Error"), NOT_IMPLEMENTED(501, "Not Implemented"),
-        SERVICE_UNAVAILABLE(503, "Service Unavailable"), UNSUPPORTED_HTTP_VERSION(505, "HTTP Version Not " +
-            "Supported");
+        INTERNAL_ERROR(500, "Internal Server Error"),
+        NOT_IMPLEMENTED(501, "Not Implemented"),
+        SERVICE_UNAVAILABLE(503, "Service Unavailable"),
+        UNSUPPORTED_HTTP_VERSION(505, "HTTP Version Not " + "Supported");
 
         private final int requestStatus;
 
@@ -261,7 +276,7 @@ public class Response implements Closeable {
                 hasRemaining = true;
             }
         } catch (IOException ioe) {
-            NanoHTTPD.LOG.log(Level.SEVERE, "Could not send response to the client", ioe);
+            Log.w("Could not send response to the client", ioe);
         }
     }
 
@@ -302,19 +317,12 @@ public class Response implements Closeable {
                 }
                 bytes = txt.getBytes(contentType.getEncoding());
             } catch (UnsupportedEncodingException e) {
-                NanoHTTPD.LOG.log(Level.SEVERE, "encoding problem, responding nothing", e);
+                Log.w("encoding problem, responding nothing", e);
                 bytes = new byte[0];
             }
             return newFixedLengthResponse(status, contentType.getContentTypeHeader(), new ByteArrayInputStream(bytes)
                 , bytes.length);
         }
-    }
-
-    /**
-     * Create a text response with known length.
-     */
-    public static Response newFixedLengthResponse(String msg) {
-        return with(Response.Status.OK).contentType(NanoHTTPD.MIME_PLAINTEXT).body(msg).build();
     }
 
     public static Builder with(Status status) {
@@ -401,7 +409,7 @@ public class Response implements Closeable {
                     }
                     bytes = body.getBytes(contentType.getEncoding());
                 } catch (UnsupportedEncodingException e) {
-                    NanoHTTPD.LOG.log(Level.SEVERE, "encoding problem, responding nothing", e);
+                    Log.w("encoding problem, responding nothing", e);
                     bytes = new byte[0];
                 }
             }

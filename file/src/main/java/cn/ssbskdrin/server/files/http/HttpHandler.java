@@ -1,17 +1,15 @@
 package cn.ssbskdrin.server.files.http;
 
 import java.io.Closeable;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.ClosedChannelException;
 import java.util.Map;
-import java.util.logging.Level;
 
-import cn.ssbskdrin.server.files.ByteBufferUtil;
-import cn.ssbskdrin.server.files.NanoHTTPD;
 import cn.ssbskdrin.server.files.core.ChannelContext;
+import cn.ssbskdrin.server.files.util.ByteBufferUtil;
+import cn.ssbskdrin.server.files.util.Log;
 
 /**
  * Created by sskbskdrin on 2021/4/11.
@@ -20,19 +18,21 @@ import cn.ssbskdrin.server.files.core.ChannelContext;
  */
 public class HttpHandler extends ChannelContext {
     private Response response;
-    private HttpDecode decode;
+    private HttpDecoder decode;
     private HttpServlet servlet = new HttpServlet() {
         @Override
         public Response get(Request request) {
-            try {
-                return Response.with(Response.Status.OK)
-                    .header("Content-Disposition", "attachment;filename=" + "opencv-4.5.1-android-sdk.zip")
-                    .body(new FileInputStream("C:\\Users\\keayuan\\Downloads\\opencv-4.5.1-android-sdk.zip"))
-                    .build();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return Response.with(Response.Status.OK).body("get").build();
+            //            try {
+            return Response.with(Response.Status.OK)
+                //                    .header("Content-Disposition", "attachment;filename=" + "opencv-4.5
+                //                    .1-android-sdk.zip")
+                //                    .body(new FileInputStream("C:\\Users\\keayuan\\Downloads\\opencv-4.5
+                //                    .1-android-sdk.zip"))
+                .body("get " + request.uri).build();
+            //            } catch (IOException e) {
+            //                e.printStackTrace();
+            //            }
+            //            return Response.with(Response.Status.OK).body("get").build();
         }
 
         @Override
@@ -57,7 +57,7 @@ public class HttpHandler extends ChannelContext {
     @Override
     public void onReceive() throws Exception {
         if (decode == null) {
-            decode = new HttpDecode();
+            decode = new HttpDecoder();
         }
         try {
             if (decode.input(buffer(true))) {
@@ -126,7 +126,7 @@ public class HttpHandler extends ChannelContext {
                 throw new IllegalArgumentException("Unknown object to close");
             }
         } catch (IOException e) {
-            NanoHTTPD.LOG.log(Level.SEVERE, "Could not close", e);
+            Log.w("Could not close", e);
         }
     }
 

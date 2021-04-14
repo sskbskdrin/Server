@@ -1,4 +1,4 @@
-package cn.ssbskdrin.server.files.http;
+package cn.ssbskdrin.server.files.util;
 
 /**
  * Created by sskbskdrin on 2021/4/13.

@@ -1,4 +1,4 @@
-package cn.ssbskdrin.server.files;
+package cn.ssbskdrin.server.files.util;
 
 import cn.sskbskdrin.log.SSKLog;
 import cn.sskbskdrin.log.console.ConsolePrinter;

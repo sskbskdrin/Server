@@ -1,6 +1,5 @@
 package cn.ssbskdrin.server.files.core;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -12,8 +11,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 
-import cn.ssbskdrin.server.files.Log;
-import cn.ssbskdrin.server.files.http.HttpHandler;
+import cn.ssbskdrin.server.files.util.IOUtils;
+import cn.ssbskdrin.server.files.util.Log;
 
 /**
  * Created by sskbskdrin on 2021/4/11.
@@ -21,48 +20,73 @@ import cn.ssbskdrin.server.files.http.HttpHandler;
  * @author sskbskdrin
  */
 public class NioServer {
-    public static void main(String[] args) {
-        final Thread thread = new Thread(() -> bind(8080).channelContextProvider(HttpHandler::new).build().start());
-        thread.start();
-        try {
-            Thread.sleep(24 * 2600 * 1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            thread.interrupt();
-        }
-    }
 
     private final ChannelContextProvider channelContextProvider;
     private final Queue<ChannelContext> queue = new SynchronousQueue<>(true);
 
     private final int port;
-    Executor executor = Executors.newFixedThreadPool(3);
+    private volatile Thread wordThread;
+    private volatile boolean isWorking;
+    private final Executor executor = Executors.newFixedThreadPool(2);
 
     private NioServer(Builder builder) {
         port = builder.port;
         channelContextProvider = builder.provider;
     }
 
-    void start() {
+    public void sync() {
         try {
-            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+            start();
+            for (; ; ) {
+                synchronized (this) {
+                    this.wait(3000);
+                }
+                if (!isWorking) {
+                    if (wordThread != null) {
+                        wordThread.interrupt();
+                    }
+                    while (wordThread != null) {
+                        Thread.yield();
+                    }
+                    start();
+                }
+                isWorking = false;
+            }
+        } catch (InterruptedException e) {
+            if (wordThread != null) {
+                wordThread.interrupt();
+            }
+        }
+    }
+
+    public void async() {
+        executor.execute(this::async);
+    }
+
+    private void start() {
+        executor.execute(() -> {
+            Log.i("work thread start");
+            wordThread = Thread.currentThread();
+            try {
+                loop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            wordThread = null;
+            Log.w("work thread interrupted");
+        });
+    }
+
+    private void loop() {
+        ServerSocketChannel serverSocketChannel = null;
+        try {
+            serverSocketChannel = ServerSocketChannel.open();
             Selector selector = Selector.open();
             serverSocketChannel.socket().bind(new InetSocketAddress(port));
             serverSocketChannel.configureBlocking(false);
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-            loop(selector);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
-    }
-
-    private void loop(Selector selector) {
-        for (; ; ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-            try {
+            while (!Thread.currentThread().isInterrupted()) {
+                isWorking = true;
                 if (selector.select(2000) == 0) {
                     Log.d("wait==");
                     continue;
@@ -85,8 +109,12 @@ public class NioServer {
                         context.write();
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            Log.w(e.getMessage(), e);
+        } finally {
+            if (serverSocketChannel != null) {
+                IOUtils.closeQuietly(serverSocketChannel);
             }
         }
     }

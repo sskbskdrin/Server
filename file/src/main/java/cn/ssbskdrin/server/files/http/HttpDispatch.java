@@ -6,8 +6,8 @@ package cn.ssbskdrin.server.files.http;
  * @author keayuan
  */
 class HttpDispatch {
-    static HttpDecode get(Request request) {
-        return new HttpDecode();
+    static HttpDecoder get(Request request) {
+        return new HttpDecoder();
         //        sendResponse.send(Response.newFixedLengthResponse("this is test get"));
     }
 }

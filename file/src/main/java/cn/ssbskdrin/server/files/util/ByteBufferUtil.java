@@ -1,4 +1,4 @@
-package cn.ssbskdrin.server.files;
+package cn.ssbskdrin.server.files.util;
 
 import java.nio.ByteBuffer;
 

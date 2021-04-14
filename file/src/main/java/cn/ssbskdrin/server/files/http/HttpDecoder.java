@@ -25,14 +25,15 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cn.ssbskdrin.server.files.Log;
+import cn.ssbskdrin.server.files.util.Log;
+import cn.ssbskdrin.server.files.util.KMP;
 
 /**
  * Created by sskbskdrin on 2021/4/11.
  *
  * @author sskbskdrin
  */
-public class HttpDecode implements Closeable {
+public class HttpDecoder implements Closeable {
 
     private static final long MEMORY_STORE_LIMIT = 1024 * 512;
 
@@ -375,8 +376,11 @@ public class HttpDecode implements Closeable {
 
         private RandomAccessFile getTmpBucket() {
             try {
-                String name = System.getProperty("java.io.tmpdir") + "/NioServer/" + tempFileName;
+                String name = System.getProperty("java.io.tmpdir") + "/NioServer/";
                 File file = new File(name);
+                if (!file.exists()) file.mkdirs();
+                name = name + tempFileName;
+                file = new File(name);
                 if (!file.exists()) {
                     file.createNewFile();
                 }
