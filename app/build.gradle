@@ -32,7 +32,7 @@ dependencies {
     implementation project(':base')
     implementation project(':socket')
     implementation project(':ftp')
-//    implementation project(':http')
+    implementation project(':http')
     implementation project(':rtmp')
     implementation project(':rtmblib')
 //    implementation project(':file')

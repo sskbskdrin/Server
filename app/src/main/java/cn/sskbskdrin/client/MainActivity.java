@@ -51,7 +51,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.main_file:
-                cn.sskbskdrin.file.Main.main(null);
                 break;
             case R.id.main_ftp:
                 start("ftp");
