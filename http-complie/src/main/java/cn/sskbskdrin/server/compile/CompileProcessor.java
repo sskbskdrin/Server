@@ -67,10 +67,10 @@ public class CompileProcessor extends AbstractProcessor {
         JavaFileObject sourceFile = null;
         log("process");
         try {
-            sourceFile = filer.createSourceFile("cn.sskbskdrin.server.http.Route");
+            sourceFile = filer.createSourceFile("cn.sskbskdrin.http.http.Route");
             writer = new JavaWriter(sourceFile.openWriter(), fileType -> {
                 fileType.comment("Generated code from http compile. Do not modify!");
-                fileType.emitPackage("cn.sskbskdrin.server.http");
+                fileType.emitPackage("cn.sskbskdrin.http.http");
                 fileType.emitImports("java.util.HashMap");
                 fileType.emitClass("Route", EnumSet.of(Modifier.FINAL), null, null, classType -> {
                     classType.field("HashMap<String, Class<? extends HandlerServlet>>", "map",
@@ -87,7 +87,7 @@ public class CompileProcessor extends AbstractProcessor {
                         e.printStackTrace();
                     }
                     classType.block(true, blockType -> {
-                        blockType.statement("cn.sskbskdrin.server.servlet.file.Files.indexHtml = \"%s\"",
+                        blockType.statement("cn.sskbskdrin.http.servlet.file.Files.indexHtml = \"%s\"",
                             html.toString()
                             .replaceAll("\"", "\\\\\"")
                             .replaceAll("\n", "\\\\n"));

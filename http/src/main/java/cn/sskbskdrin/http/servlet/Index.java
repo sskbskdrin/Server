@@ -1,9 +1,9 @@
-package cn.sskbskdrin.server.servlet;
+package cn.sskbskdrin.http.servlet;
 
 import cn.sskbskdrin.server.annotation.API;
-import cn.sskbskdrin.server.http.HandlerServlet;
-import cn.sskbskdrin.server.util.Html;
-import cn.sskbskdrin.server.util.ResponseFactory;
+import cn.sskbskdrin.http.http.HandlerServlet;
+import cn.sskbskdrin.http.util.Html;
+import cn.sskbskdrin.http.util.ResponseFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;

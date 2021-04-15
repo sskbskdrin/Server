@@ -2,10 +2,11 @@
 
 buildscript {
     ext.netty_versoin = '4.1.51.Final'
-    
+
     repositories {
         google()
         jcenter()
+        maven { url 'http://maven.iyuan.site/repository/' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.1'
@@ -19,6 +20,7 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven { url 'http://maven.iyuan.site/repository/' }
     }
 }
 

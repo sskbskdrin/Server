@@ -1,8 +1,8 @@
-package cn.sskbskdrin.server.http;
+package cn.sskbskdrin.http.http;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import cn.sskbskdrin.server.util.ResponseFactory;
+import cn.sskbskdrin.http.util.ResponseFactory;
 import cn.sskbskdrin.server.util.SLog;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

@@ -1,4 +1,4 @@
-package cn.sskbskdrin.server.servlet.file;
+package cn.sskbskdrin.http.servlet.file;
 
 import android.util.Log;
 
@@ -14,9 +14,9 @@ import java.nio.channels.FileChannel;
 
 import cn.sskbskdrin.log.L;
 import cn.sskbskdrin.server.annotation.API;
-import cn.sskbskdrin.server.http.HandlerServlet;
-import cn.sskbskdrin.server.util.FileUtils;
-import cn.sskbskdrin.server.util.ResponseFactory;
+import cn.sskbskdrin.http.http.HandlerServlet;
+import cn.sskbskdrin.http.util.FileUtils;
+import cn.sskbskdrin.http.util.ResponseFactory;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;

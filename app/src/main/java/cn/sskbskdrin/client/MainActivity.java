@@ -29,6 +29,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        findViewById(R.id.main_file).setOnClickListener(this);
         findViewById(R.id.main_ftp).setOnClickListener(this);
         findViewById(R.id.main_http).setOnClickListener(this);
         findViewById(R.id.main_socket).setOnClickListener(this);
@@ -49,6 +50,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.main_file:
+                cn.sskbskdrin.file.Main.main(null);
+                break;
             case R.id.main_ftp:
                 start("ftp");
                 break;

@@ -1,4 +1,4 @@
-package cn.sskbskdrin.server.util;
+package cn.sskbskdrin.http.util;
 
 /**
  * Created by keayuan on 2020/9/8.

@@ -1,4 +1,4 @@
-package cn.sskbskdrin.server.util;
+package cn.sskbskdrin.http.util;
 
 import org.json.JSONException;
 import org.json.JSONObject;

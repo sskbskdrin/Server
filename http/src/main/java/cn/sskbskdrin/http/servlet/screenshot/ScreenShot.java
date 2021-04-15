@@ -1,4 +1,4 @@
-package cn.sskbskdrin.server.servlet.screenshot;
+package cn.sskbskdrin.http.servlet.screenshot;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.sskbskdrin.server.annotation.API;
-import cn.sskbskdrin.server.http.HandlerServlet;
+import cn.sskbskdrin.http.http.HandlerServlet;
 import cn.sskbskdrin.server.util.SLog;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;

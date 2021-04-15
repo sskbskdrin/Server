@@ -1,4 +1,4 @@
-package cn.sskbskdrin.server.servlet.screenshot;
+package cn.sskbskdrin.http.servlet.screenshot;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;

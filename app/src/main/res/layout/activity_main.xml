@@ -1,44 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/main_ip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textSize="32sp"/>
+        android:textSize="32sp" />
+
+    <Button
+        android:id="@+id/main_file"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="file" />
 
     <Button
         android:id="@+id/main_ftp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ftp"/>
+        android:text="ftp" />
 
     <Button
         android:id="@+id/main_http"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="http"/>
+        android:text="http" />
 
     <Button
         android:id="@+id/main_socket"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="socket"/>
+        android:text="socket" />
 
     <Button
         android:id="@+id/main_rtsp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="rtsp"/>
+        android:text="rtsp" />
 
     <Button
         android:id="@+id/main_rtmp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="rtmp"/>
+        android:text="rtmp" />
 
 </LinearLayout>

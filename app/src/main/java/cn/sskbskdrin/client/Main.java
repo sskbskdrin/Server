@@ -3,7 +3,6 @@ package cn.sskbskdrin.client;
 import android.os.Environment;
 
 import cn.sskbskdrin.server.ftp.FtpServer;
-import cn.sskbskdrin.server.http.HttpServer;
 import cn.sskbskdrin.server.rtmp.RTMPServer;
 import cn.sskbskdrin.server.socket.NettyServer;
 import cn.sskbskdrin.server.util.SLog;
@@ -30,7 +29,7 @@ public class Main {
                     if (port == 0) {
                         port = 8080;
                     }
-                    HttpServer.getInstance().start(port);
+                    //                    HttpServer.getInstance().start(port);
                 } else if ("ftp".equals(name[0])) {
                     if (port == 0) {
                         port = 2121;

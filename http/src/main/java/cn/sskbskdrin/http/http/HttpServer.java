@@ -1,4 +1,4 @@
-package cn.sskbskdrin.server.http;
+package cn.sskbskdrin.http.http;
 
 import cn.sskbskdrin.server.base.BaseServer;
 import io.netty.channel.Channel;
